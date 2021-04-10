@@ -1,0 +1,540 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/pico_sdk_init.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/pico_sdk_version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/pico_utils.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/pico_pre_load_platform.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/preload/platforms/rp2040.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/preload/platforms/pico/pico.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/pico_pre_load_toolchain.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/VisualGDB/Debug/CMakeFiles/3.15.2/CMakeSystem.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/preload/toolchains/pico_arm_gcc.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/preload/toolchains/find_compiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/VisualGDB/Debug/CMakeFiles/3.15.2/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/VisualGDB/Debug/CMakeFiles/3.15.2/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/VisualGDB/Debug/CMakeFiles/3.15.2/CMakeASMCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/Platform/PICO.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Internal/CMakeCheckCompilerFlag.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/Platform/PICO.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/cmake/Platform/PICO.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeASMInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU-ASM.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/pico_sdk_init.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeASMInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU-ASM.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/tools/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/board_setup.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/boards/generic_board.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2040.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/CMakeASMInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU-ASM.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/boot_picoboot/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/boot_uf2/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_base/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_base/include/pico/version.h.in"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_bit_ops/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_binary_info/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_divider/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_sync/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_time/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_util/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/common/pico_stdlib/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_base/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_claim/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_adc/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_clocks/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_dma/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_divider/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_flash/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_gpio/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_i2c/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_interp/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_irq/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_pio/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_pll/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_pwm/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_resets/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_rtc/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_spi/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_sync/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_timer/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_uart/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_vreg/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_watchdog/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/hardware_xosc/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_bootrom/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_platform/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/boot_stage2/CMakeLists.txt"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPython3.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPython/Support.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_bootsel_via_double_reset/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_multicore/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_unique_id/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_bit_ops/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_divider/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_double/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_int64_ops/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_float/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_mem_ops/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_malloc/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_printf/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_stdio/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_stdio_semihosting/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_stdio_uart/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/tinyusb/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_stdio_usb/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_stdlib/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_cxx_options/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_standard_link/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_fix/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2_common/pico_runtime/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2040/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2040/hardware_regs/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/src/rp2040/hardware_structs/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/PicoSDK/1.1.0-Package/docs/CMakeLists.txt"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindDoxygen.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/marin/AppData/Local/VisualGDB/CMake/share/cmake-3.15/Modules/FindPackageMessage.cmake"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "C:/Users/marin/source/repos/PicoKernel/PicoKernel/build/VisualGDB/Debug",
+		"source" : "C:/Users/marin/source/repos/PicoKernel/PicoKernel"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}
