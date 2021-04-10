@@ -2,7 +2,7 @@
 #define _POS_THREADS_H_
 
 #include "pOS_main.hpp"
-#include "pOS_enums.h"
+#include "pOS_enums.hpp"
 
 class pOS_thread
 {

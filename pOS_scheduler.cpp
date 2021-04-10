@@ -288,6 +288,7 @@ bool pOS_scheduler::disable_thread(pOS_thread_id id)
 		return false;
 	
 	_thread->enabled = false;
+	return true;
 }
 
 bool pOS_scheduler::reset_thread(pOS_thread_id id)
@@ -300,6 +301,7 @@ bool pOS_scheduler::reset_thread(pOS_thread_id id)
 		return false;
 	
 	_thread->initialized = false;
+	return true;
 }
 
 bool pOS_scheduler::is_thread_enabled(pOS_thread_id id)

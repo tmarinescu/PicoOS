@@ -11,12 +11,14 @@ add_executable(hello_multicore
         pOS_scheduler.cpp
         pOS_task.cpp
         pOS_thread.cpp
-        pOS_kernel.S)
+        pOS_kernel.S
+        pOS_gpio.cpp)
 
 # Add pico_multicore which is required for multicore functionality
 target_link_libraries(hello_multicore
         pico_stdlib
-        pico_multicore)
+        pico_multicore
+        hardware_adc)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(hello_multicore)

@@ -1,5 +1,6 @@
 #include "pOS_main.hpp"
 #include "pOS_scheduler.hpp"
+#include "pOS_gpio.hpp"
 
 uint32_t main_tracker = 0; /* track systick */
 
@@ -26,6 +27,7 @@ int32_t task_2()
 {
 	inc2++;
 	busy_wait_us(1000 * 1000);
+	pOS_gpio::get(25)->toggle();
 	return 1;
 }
 
@@ -61,7 +63,11 @@ int main()
 {
 	/* Disable all interrupts*/
 	__asm volatile("cpsid if" : : : "memory");
-
+	
+	/* Initialize GPIO system and LED */
+	pOS_gpio::initialize_all();
+	pOS_gpio::get(25)->set_type(pOS_gpio_type::output)->disable();
+	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
 
@@ -106,7 +112,6 @@ int main()
 	
 	/* Start the kernel */
 	pOS_scheduler::jump_start();
-	
 	while (1) ;
 	return 0;
 }
