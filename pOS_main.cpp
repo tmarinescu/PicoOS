@@ -127,34 +127,22 @@ int main()
 	pOS_scheduler::initialize();
 
 	/* Link all the threads to the functions and IDs */
-	pOS_scheduler::link_thread(pOS_thread_id::communication, 0, &thread_1);
-	pOS_scheduler::link_thread(pOS_thread_id::critical, 1, &thread_2);
-	pOS_scheduler::link_thread(pOS_thread_id::external, 2, &thread_3);
-	pOS_scheduler::link_thread(pOS_thread_id::system, 3, &thread_4);
-	pOS_scheduler::link_thread(pOS_thread_id::general_1, 4, &thread_5);
-	pOS_scheduler::link_thread(pOS_thread_id::general_2, 5, &thread_6);
-	pOS_scheduler::link_thread(pOS_thread_id::general_3, 6, &thread_7);
-	pOS_scheduler::link_thread(pOS_thread_id::general_4, 7, &thread_8);
+	pOS_scheduler::link_thread(0, &thread_1);
+	pOS_scheduler::link_thread(1, &thread_2);
+	pOS_scheduler::link_thread(2, &thread_3);
+	pOS_scheduler::link_thread(3, &thread_4);
+	pOS_scheduler::link_thread(4, &thread_5);
+	pOS_scheduler::link_thread(5, &thread_6);
+	pOS_scheduler::link_thread(6, &thread_7);
+	pOS_scheduler::link_thread(7, &thread_8);
 
 	/* Initialize thread stacks */
-	pOS_scheduler::initialize_thread(pOS_thread_id::communication, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::critical, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::external, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::system, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::general_1, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::general_2, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::general_3, pOS_thread_size::byte_128);
-	pOS_scheduler::initialize_thread(pOS_thread_id::general_4, pOS_thread_size::byte_128);
+	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
+		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_256);
 
 	/* Enable all threads */
-	pOS_scheduler::enable_thread(pOS_thread_id::communication);
-	pOS_scheduler::enable_thread(pOS_thread_id::critical);
-	pOS_scheduler::enable_thread(pOS_thread_id::external);
-	pOS_scheduler::enable_thread(pOS_thread_id::system);
-	pOS_scheduler::enable_thread(pOS_thread_id::general_1);
-	pOS_scheduler::enable_thread(pOS_thread_id::general_2);
-	pOS_scheduler::enable_thread(pOS_thread_id::general_3);
-	pOS_scheduler::enable_thread(pOS_thread_id::general_4);
+	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
+		pOS_scheduler::enable_thread(i);
 
 	/* Add some random tasks */
 	uint32_t id = 0;
