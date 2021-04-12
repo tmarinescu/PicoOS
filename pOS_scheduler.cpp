@@ -1,5 +1,7 @@
 #include "pOS_scheduler.hpp"
+#include "pOS_kernel_hooks.hpp"
 #include "hardware/sync.h"
+#include "pOS_critical_section.hpp"
 
 extern "C"
 {
@@ -363,7 +365,7 @@ bool pOS_scheduler::set_thread_speed(int32_t thread_id, pOS_thread_speed speed)
 bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
 {
 	/* Disable all interrupts and remember mask */
-	uint32_t status = pOS_disable_and_save_interrupts();
+	uint32_t status = pOS_critical::disable_and_save_interrupts();
 	
 	uint32_t _index = 0;
 	for (_index = 0; _index < NUM_OF_TASKS; _index++)
@@ -392,14 +394,14 @@ bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatil
 			
 			/* Restore all interrupts */
 			*ret_id = _index;
-			pOS_restore_interrupts(status);
+			pOS_critical::enable_and_restore_interrupts(status);
 			return true;
 		}
 	}
 	
 	/* Restore all interrupts */
 	ret_id = 0;
-	pOS_restore_interrupts(status);
+	pOS_critical::enable_and_restore_interrupts(status);
 	return false;
 }
 

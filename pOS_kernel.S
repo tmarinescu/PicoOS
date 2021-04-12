@@ -11,9 +11,9 @@ pOS_main_stack: .word 0
 .global isr_systick
 .global pOS_kernel_start
 .global pOS_disable_and_save_interrupts
-.global pOS_restore_interrupts
+.global pOS_enable_and_restore_interrupts
 .global pOS_disable_interrupts
-
+.global pOS_enable_interrupts
 .extern pOS_scheduler_tick
 .extern pOS_stack_ptr
 
@@ -97,13 +97,19 @@ pOS_disable_and_save_interrupts:
 	BX LR
 
 .thumb_func
-pOS_restore_interrupts:
+pOS_enable_and_restore_interrupts:
 	MSR PRIMASK, R0
+	CPSIE IF
 	BX LR
 
 .thumb_func
 pOS_disable_interrupts:
 	CPSID IF
+	BX LR
+
+.thumb_func
+pOS_enable_interrupts:
+	CPSIE IF
 	BX LR
 
 .align
