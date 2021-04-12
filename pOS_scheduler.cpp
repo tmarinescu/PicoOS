@@ -20,7 +20,6 @@ volatile bool pOS_scheduler::_running;
 pOS_thread pOS_scheduler::_threads[NUM_OF_THREADS];
 pOS_task pOS_scheduler::_tasks[NUM_OF_TASKS];
 
-pOS_thread_id pOS_scheduler::_thread_assignments[NUM_OF_THREADS];
 uint32_t pOS_scheduler::_thread_addresses[NUM_OF_THREADS];
 	
 volatile uint32_t pOS_scheduler::_stack[TOTAL_MAXIMUM_STACK];
@@ -168,11 +167,11 @@ bool pOS_scheduler::initialize()
 	
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 	{
+		_threads[i].id = -1;
 		_threads[i].attached_task = 0;
 		_threads[i].enabled = false;
 		_threads[i].error = 0;
 		_threads[i].error_code = pOS_thread_error::none;
-		_threads[i].id = pOS_thread_id::invalid;
 		_threads[i].initialized = false;
 		_threads[i].size = pOS_thread_size::byte_32;
 		_threads[i].speed = pOS_thread_speed::normal;
@@ -180,9 +179,7 @@ bool pOS_scheduler::initialize()
 		_threads[i].stack_crc32 = 0;
 		_threads[i].stack_size = 0;
 		_threads[i].used_stack = 0;
-		_threads[i].index = 0;
 		_thread_addresses[i] = 0;
-		_thread_assignments[i] = pOS_thread_id::invalid;
 	}
 	
 	for (uint32_t i = 0; i < NUM_OF_TASKS; i++)
@@ -228,30 +225,25 @@ uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_
 	return 0;
 }
 
-pOS_thread_id pOS_scheduler::find_thread_critical(uint32_t needed_stack)
+int32_t pOS_scheduler::find_thread_critical(uint32_t needed_stack)
 {
-	return pOS_thread_id::invalid;
+	return -1;
 }
 
 	
-bool pOS_scheduler::link_thread(pOS_thread_id thread, uint32_t thread_num, void(*volatile thrd)(pOS_thread_id))
+bool pOS_scheduler::link_thread(int32_t thread_id, void(*volatile thrd)(int32_t))
 {
-	if (thread_num >= NUM_OF_THREADS)
+	if (thread_id >= NUM_OF_THREADS || thread_id < 0)
 		return false;
 	
-	if (_thread_assignments[thread_num] != pOS_thread_id::invalid)
-		return false;
-	
-	_thread_assignments[thread_num] = thread;
-	_thread_addresses[thread_num] = (uint32_t)thrd;
-	_threads[thread_num].id = thread;
-	_threads[thread_num].index = thread_num;
+	_thread_addresses[thread_id] = (uint32_t)thrd;
+	_threads[thread_id].id = thread_id;
 	return true;
 }
 
-bool pOS_scheduler::enable_thread(pOS_thread_id id)
+bool pOS_scheduler::enable_thread(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
@@ -271,9 +263,9 @@ bool pOS_scheduler::enable_thread(pOS_thread_id id)
 	return true;
 }
 
-bool pOS_scheduler::disable_thread(pOS_thread_id id)
+bool pOS_scheduler::disable_thread(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
@@ -287,9 +279,9 @@ bool pOS_scheduler::disable_thread(pOS_thread_id id)
 	return true;
 }
 
-bool pOS_scheduler::reset_thread(pOS_thread_id id)
+bool pOS_scheduler::reset_thread(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
@@ -300,9 +292,9 @@ bool pOS_scheduler::reset_thread(pOS_thread_id id)
 	return true;
 }
 
-bool pOS_scheduler::is_thread_enabled(pOS_thread_id id)
+bool pOS_scheduler::is_thread_enabled(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
@@ -312,25 +304,17 @@ bool pOS_scheduler::is_thread_enabled(pOS_thread_id id)
 	return _thread->enabled;
 }
 
-pOS_thread* pOS_scheduler::get_thread(pOS_thread_id id)
+pOS_thread* pOS_scheduler::get_thread(int32_t thread_id)
 {
-	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-	{
-		if (_threads[i].id == id)
-		{
-			return &_threads[i];
-		}
-	}
-	
-	return 0;
+	return &_threads[thread_id];
 }
 
-bool pOS_scheduler::initialize_thread(pOS_thread_id id, pOS_thread_size size)
+bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_thread_size size)
 {
 	if (_thread_init_offset >= NUM_OF_THREADS)
 		return false;
 	
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
@@ -345,8 +329,8 @@ bool pOS_scheduler::initialize_thread(pOS_thread_id id, pOS_thread_size size)
 	_thread->stack_size = (uint32_t)size;
 	_thread->used_stack = 0;
 	_stack[_stack_offset + (uint32_t)size - 1] = 0x01000000; //xPSR
-	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->index]; //PC
-	_stack[_stack_offset + (uint32_t)size - 8] = (uint32_t)_thread_assignments[_thread->index]; //R0 (argument passed to threads to identify itself by ID)
+	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->id]; //PC
+	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id; //R0 (argument passed to threads to identify itself by ID)
 	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16]; //start of the stack pointer
 	
 	if(_thread_init_offset == 0)
@@ -361,16 +345,16 @@ bool pOS_scheduler::initialize_thread(pOS_thread_id id, pOS_thread_size size)
 	return true;
 }
 
-bool pOS_scheduler::is_thread_initialized(pOS_thread_id id)
+bool pOS_scheduler::is_thread_initialized(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return false;
 	
 	return _thread->initialized;
 }
 
-bool pOS_scheduler::set_thread_speed(pOS_thread_id id, pOS_thread_speed speed)
+bool pOS_scheduler::set_thread_speed(int32_t thread_id, pOS_thread_speed speed)
 {
 	return false;
 }
@@ -496,9 +480,9 @@ bool pOS_scheduler::does_task_exist(uint32_t id)
 	return _tasks[id].initialized;
 }
 
-pOS_task* pOS_scheduler::get_active_task(pOS_thread_id id)
+pOS_task* pOS_scheduler::get_active_task(int32_t thread_id)
 {
-	pOS_thread* _thread = get_thread(id);
+	pOS_thread* _thread = get_thread(thread_id);
 	if (_thread == 0)
 		return 0;
 	
@@ -512,20 +496,7 @@ void pOS_scheduler::set_thread_address(uint32_t index, uint32_t addr)
 {
 	_thread_addresses[index] = addr;
 }
-
-void pOS_scheduler::set_thread_assignment(uint32_t index, pOS_thread_id id)
-{
-	_thread_assignments[index] = id;
-}
-
 uint32_t pOS_scheduler::get_thread_address(uint32_t index)
 {
 	return _thread_addresses[index];
 }
-
-pOS_thread_id pOS_scheduler::get_thread_assignment(uint32_t index)
-{
-	return _thread_assignments[index];
-}
-
-

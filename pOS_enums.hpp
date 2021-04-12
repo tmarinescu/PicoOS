@@ -54,17 +54,4 @@ enum class pOS_thread_size
 	byte_2048 = 2048
 };
 
-enum pOS_thread_id
-{
-	communication    = 0,
-	system,
-	external,
-	critical,
-	general_1,
-	general_2,
-	general_3,
-	general_4,
-	invalid
-};
-
 #endif

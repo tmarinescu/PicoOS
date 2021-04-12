@@ -3,7 +3,7 @@
 
 pOS_thread::pOS_thread()
 {
-	id = pOS_thread_id::invalid;
+	id = -1;
 	stack = 0;
 	attached_task = 0;
 	stack_size = 0;
@@ -12,7 +12,6 @@ pOS_thread::pOS_thread()
 	error_code = pOS_thread_error::none;
 	speed = pOS_thread_speed::normal;
 	size = pOS_thread_size::byte_32;
-	index = 0;
 	
 	enabled = false;
 	initialized = false;
@@ -24,7 +23,7 @@ pOS_thread::~pOS_thread()
 	
 }
 
-void thread_1(pOS_thread_id thread)
+void thread_1(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -69,7 +68,7 @@ void thread_1(pOS_thread_id thread)
 	}
 }
 
-void thread_2(pOS_thread_id thread)
+void thread_2(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -114,7 +113,7 @@ void thread_2(pOS_thread_id thread)
 	}
 }
 
-void thread_3(pOS_thread_id thread)
+void thread_3(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -159,7 +158,7 @@ void thread_3(pOS_thread_id thread)
 	}
 }
 
-void thread_4(pOS_thread_id thread)
+void thread_4(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -204,7 +203,7 @@ void thread_4(pOS_thread_id thread)
 	}
 }
 
-void thread_5(pOS_thread_id thread)
+void thread_5(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -249,7 +248,7 @@ void thread_5(pOS_thread_id thread)
 	}
 }
 
-void thread_6(pOS_thread_id thread)
+void thread_6(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -294,7 +293,7 @@ void thread_6(pOS_thread_id thread)
 	}
 }
 
-void thread_7(pOS_thread_id thread)
+void thread_7(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
@@ -339,7 +338,7 @@ void thread_7(pOS_thread_id thread)
 	}
 }
 
-void thread_8(pOS_thread_id thread)
+void thread_8(int32_t thread)
 {
 	pOS_thread* _thread = pOS_scheduler::get_thread(thread);
 	if (_thread == 0)
