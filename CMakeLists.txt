@@ -6,19 +6,22 @@ pico_sdk_init()
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+
 add_executable(hello_multicore
         pOS_main.cpp
         pOS_scheduler.cpp
         pOS_task.cpp
         pOS_thread.cpp
         pOS_kernel.S
-        pOS_gpio.cpp)
+        pOS_gpio.cpp
+        pOS_memory.cpp)
 
 # Add pico_multicore which is required for multicore functionality
 target_link_libraries(hello_multicore
         pico_stdlib
         pico_multicore
-        hardware_adc)
+        hardware_adc
+        hardware_pwm)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(hello_multicore)

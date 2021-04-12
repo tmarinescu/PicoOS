@@ -12,7 +12,8 @@ enum class pOS_gpio_function
 	uart,
 	i2c,
 	spi,
-	adc
+	adc,
+	pwm
 };
 
 enum class pOS_task_priority

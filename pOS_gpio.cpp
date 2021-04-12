@@ -1,5 +1,6 @@
 #include "pOS_gpio.hpp"
 #include "hardware/adc.h"
+#include "hardware/pwm.h"
 
 pOS_gpio pOS_gpio::_gpios[30];
 	
@@ -54,7 +55,21 @@ pOS_gpio* pOS_gpio::set_function(pOS_gpio_function func)
 	{
 		adc_gpio_init(_pin);
 	}
+	else if (func == pOS_gpio_function::pwm)
+	{
+		gpio_set_function(_pin, GPIO_FUNC_PWM);
+		uint32_t slice = pwm_gpio_to_slice_num(_pin);
+		pwm_config config = pwm_get_default_config();
+		pwm_config_set_clkdiv(&config, 4.0f);
+		pwm_init(slice, &config, true);
+	}
 	
+	return this;
+}
+
+pOS_gpio* pOS_gpio::set_pwm(uint32_t value)
+{
+	pwm_set_gpio_level(_pin, value * value);
 	return this;
 }
 	

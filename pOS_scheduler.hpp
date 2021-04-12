@@ -5,6 +5,14 @@
 #include "pOS_thread.hpp"
 #include "pOS_task.hpp"
 
+extern "C"
+{
+	void pOS_kernel_start(); /* Start the kernel with the first thread */
+	uint32_t pOS_disable_and_save_interrupts();
+	void pOS_restore_interrupts(uint32_t state);
+	void pOS_disable_interrupts();
+}
+
 class pOS_scheduler
 {
 private:
