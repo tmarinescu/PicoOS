@@ -4,16 +4,12 @@
 extern "C"
 {
 	volatile uint32_t** pOS_stack_ptr; /* Used for context switching */
-	void pOS_kernel_start(); /* Start the kernel with the first thread */
 	
 	/* Called by context switch. Stack swapping happens in update() */
 	void pOS_scheduler_tick()
 	{
 		pOS_scheduler::pause();
-		
-		main_tracker = pOS_scheduler::get_tick();
 		pOS_scheduler::update();
-		
 		pOS_scheduler::resume();
 		return;
 	}
@@ -383,9 +379,7 @@ bool pOS_scheduler::set_thread_speed(pOS_thread_id id, pOS_thread_speed speed)
 bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
 {
 	/* Disable all interrupts and remember mask */
-	uint32_t status;
-	__asm volatile("mrs %0, PRIMASK" : "=r" (status)::);
-	__asm volatile("cpsid i");
+	uint32_t status = pOS_disable_and_save_interrupts();
 	
 	uint32_t _index = 0;
 	for (_index = 0; _index < NUM_OF_TASKS; _index++)
@@ -414,14 +408,14 @@ bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatil
 			
 			/* Restore all interrupts */
 			*ret_id = _index;
-			__asm volatile("msr PRIMASK,%0"::"r" (status) :);
+			pOS_restore_interrupts(status);
 			return true;
 		}
 	}
 	
 	/* Restore all interrupts */
 	ret_id = 0;
-	__asm volatile("msr PRIMASK,%0"::"r" (status) :);
+	pOS_restore_interrupts(status);
 	return false;
 }
 

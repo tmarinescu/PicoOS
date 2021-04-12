@@ -14,6 +14,7 @@ private:
 public:
 	pOS_gpio* set_type(pOS_gpio_type type);
 	pOS_gpio* set_function(pOS_gpio_function func);
+	pOS_gpio* set_pwm(uint32_t value);
 	pOS_gpio* pull_up();
 	pOS_gpio* pull_down();
 	pOS_gpio* enable();

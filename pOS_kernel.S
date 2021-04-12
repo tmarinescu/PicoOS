@@ -1,15 +1,19 @@
 .data
 pOS_main_stack: .word 0
 
+.thumb
 .syntax unified
 .cpu cortex-m0plus
-.thumb
-
 .section .text, "ax"
-.align 2
+.balign 4
+.eabi_attribute Tag_ABI_align_preserved, 1
 
 .global isr_systick
 .global pOS_kernel_start
+.global pOS_disable_and_save_interrupts
+.global pOS_restore_interrupts
+.global pOS_disable_interrupts
+
 .extern pOS_scheduler_tick
 .extern pOS_stack_ptr
 
@@ -85,3 +89,22 @@ pOS_kernel_start:
 
 	CPSIE IF
 	BX R2						@Jump to the new function
+
+.thumb_func
+pOS_disable_and_save_interrupts:
+	MRS R0, PRIMASK
+	CPSID IF
+	BX LR
+
+.thumb_func
+pOS_restore_interrupts:
+	MSR PRIMASK, R0
+	BX LR
+
+.thumb_func
+pOS_disable_interrupts:
+	CPSID IF
+	BX LR
+
+.align
+.end
