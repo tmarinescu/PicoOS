@@ -2,18 +2,23 @@
 #include "pOS_scheduler.hpp"
 #include "pOS_gpio.hpp"
 #include "pOS_memory.hpp"
-
+#include "pOS_critical_section.hpp"
+#include "pOS_mutex.hpp"
 
 /* Used for LED task */
 #define MEM_ID_LED_STATE	0xAABBCCDD
 #define MEM_ID_LED_FADE		0xAABBCCCC
 
+/* Global mutex for testing */
+pOS_mutex g_mutex;
 
 /* Simple task example */
 int32_t simple_loop_task()
 {
 	static uint32_t inc1 = 0;
+	g_mutex.lock();
 	inc1++;
+	g_mutex.unlock();
 	return 0;
 }
 
@@ -71,8 +76,10 @@ void led_pwm_fade_task_return(int32_t ret)
 int32_t delayed_loop_task()
 {
 	static uint32_t inc3 = 0;
+	g_mutex.lock();
 	inc3++;
 	busy_wait_us(1000 * 1000); /* 1 second */
+	g_mutex.unlock();
 	return 3;
 }
 
@@ -114,7 +121,7 @@ void global_memory_init_task_return(int32_t ret)
 int main() 
 {
 	/* Disable all interrupts*/
-	pOS_disable_interrupts();
+	pOS_critical::disable_all_interrupts();
 	
 	pOS_memory::initialize();
 	
@@ -138,7 +145,7 @@ int main()
 
 	/* Initialize thread stacks */
 	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
-		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_256);
+		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_512);
 
 	/* Enable all threads */
 	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
