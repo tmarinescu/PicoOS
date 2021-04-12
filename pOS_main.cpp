@@ -12,6 +12,9 @@
 /* Global mutex for testing */
 pOS_mutex g_mutex;
 
+/* Critical section for testing */
+pOS_critical::pOS_critical_section g_crit_sec;
+
 /* Simple task example */
 int32_t simple_loop_task()
 {
@@ -35,8 +38,10 @@ void simple_loop_task_return(int32_t ret)
 int32_t led_pwm_fade_task()
 {
 	static uint32_t inc2 = 0;
-	inc2++;
 	
+	g_crit_sec.enter();
+	inc2++;
+
 	uint8_t* led_state = (uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE);
 	uint32_t* led_fade = (uint32_t*)pOS_memory::get_pointer(MEM_ID_LED_FADE);
 	
@@ -61,6 +66,7 @@ int32_t led_pwm_fade_task()
 	}
 	
 	pOS_gpio::get(25)->set_pwm(*led_fade); /* Set the PWM for LED */
+	g_crit_sec.exit();
 	return 1;
 }
 
