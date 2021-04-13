@@ -8,12 +8,6 @@
 
 #include <ctype.h>
 
-/* Used for LED task */
-#define MEM_ID_LED_STATE	0xAABBCCDD
-#define MEM_ID_LED_FADE		0xAABBCCCC
-#define MEM_ID_MCU_STATUS	0xBBAACCDD
-#define MEM_ID_UART_INPUT	0xAAAAAAAA
-
 /* Global mutex for testing */
 pOS_mutex g_mutex;
 pOS_mutex g_uart_mutex;
@@ -45,6 +39,9 @@ int32_t led_pwm_fade_task()
 {
 	static uint32_t inc2 = 0;
 	
+	uint8_t* led_run = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_RUNNING);
+	if (*led_run == 0)
+		return 0;
 	uint8_t* led_state = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_STATE);
 	uint32_t* led_fade = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_FADE);
 	
@@ -110,18 +107,21 @@ int32_t global_memory_init_task()
 	void* ptr3 = pOS_memory::allocate(MEM_ID_MCU_STATUS, 4);
 	void* ptr2 = pOS_memory::allocate(MEM_ID_LED_STATE, 1);
 	void* ptr4 = pOS_memory::allocate(MEM_ID_UART_INPUT, 1);
+	void* ptr5 = pOS_memory::allocate(MEM_ID_LED_RUNNING, 1);
 	
 	/* Zero out memory as a test */
 	pOS_memory::zero(MEM_ID_LED_FADE);	/* By direct ID */
 	pOS_memory::zero(ptr2);				/* By pointer */
 	pOS_memory::zero(ptr3);
 	pOS_memory::zero(ptr4);
+	pOS_memory::zero(ptr5);
 	
 	/* Initialize default values */
 	*((uint32_t*)ptr1) = 0;										/* By pointer */
 	*((uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE)) = 1;	/* By direct ID */
 	*((uint32_t*)ptr3) = 0;
 	*((uint8_t*)ptr4) = 0;
+	*((uint8_t*)ptr5) = 1;
 	g_crit_sec.exit();
 	return 4;
 }
@@ -155,6 +155,7 @@ int32_t uart_input_task()
 	uint8_t chr = pOS_communication_terminal::wait_for_input();
 	if (chr == '\r')
 	{
+		pOS_communication_terminal::interpret_command();
 		pOS_communication_terminal::print_string((uint8_t*)"\npicoOS>>");
 	}
 	else

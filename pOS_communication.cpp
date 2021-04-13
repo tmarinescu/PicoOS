@@ -1,6 +1,8 @@
 #include "pOS_communication.hpp"
 #include "pOS_gpio.hpp"
 #include "pOS_scheduler.hpp"
+#include "pOS_memory.hpp"
+#include "pOS_critical_section.hpp"
 
 #include "hardware/uart.h"
 #include <string.h>
@@ -17,6 +19,8 @@ void pOS_communication_terminal::initialize(uart_inst_t* uart, uint32_t tx_pin, 
 
 	pOS_gpio::get(tx_pin)->set_function(pOS_gpio_function::uart);
 	pOS_gpio::get(rx_pin)->set_function(pOS_gpio_function::uart);
+	
+	uint8_t garbage = uart_getc((uart_inst_t *)_assigned_uart);
 }
 
 void pOS_communication_terminal::clear_terminal()
@@ -79,8 +83,41 @@ uint8_t pOS_communication_terminal::wait_for_input()
 	}
 	
 	uint8_t chr = uart_getc((uart_inst_t*)_assigned_uart);
-	append_buffer(chr);
+	if(chr != '\r')
+		append_buffer(chr);
 	return chr;
+}
+
+void pOS_communication_terminal::interpret_command()
+{
+	pOS_critical::pOS_critical_section sec;
+	
+	sec.enter();
+	if (strcmp((char *)_buffer, "reset") == 0)
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"\nResetting...\n");
+		AIRCR_Register = 0x5FA0004;
+	}
+	else if (strcmp((char*)_buffer, "led stop") == 0)
+	{
+		uint8_t* led_run = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_RUNNING);
+		pOS_communication_terminal::print_string((uint8_t*)"\nLED stopped\n");
+		*led_run = 0;
+	}
+	else if (strcmp((char*)_buffer, "led start") == 0)
+	{
+		uint8_t* led_run = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_RUNNING);
+		pOS_communication_terminal::print_string((uint8_t*)"\nLED started\n");
+		*led_run = 1;
+	}
+	else
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"\nCommand not valid [");
+		pOS_communication_terminal::print_string(_buffer);
+		pOS_communication_terminal::print_string((uint8_t*)"]\n");
+	}
+	reset_buffer();
+	sec.exit();
 }
 
 uint32_t pOS_communication_mcu::_index = 0;
