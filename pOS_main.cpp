@@ -83,10 +83,8 @@ void led_pwm_fade_task_return(int32_t ret)
 int32_t delayed_loop_task()
 {
 	static uint32_t inc3 = 0;
-	g_mutex.lock();
 	inc3++;
-	busy_wait_us(1000 * 1000); /* 1 second */
-	g_mutex.unlock();
+	pOS_scheduler::sleep(1000); /* 1 second */
 	return 3;
 }
 
@@ -110,15 +108,15 @@ int32_t global_memory_init_task()
 	void* ptr5 = pOS_memory::allocate(MEM_ID_LED_RUNNING, 1);
 	
 	/* Zero out memory as a test */
-	pOS_memory::zero(MEM_ID_LED_FADE);	/* By direct ID */
-	pOS_memory::zero(ptr2);				/* By pointer */
+	pOS_memory::zero(MEM_ID_LED_FADE); /* By direct ID */
+	pOS_memory::zero(ptr2); /* By pointer */
 	pOS_memory::zero(ptr3);
 	pOS_memory::zero(ptr4);
 	pOS_memory::zero(ptr5);
 	
 	/* Initialize default values */
-	*((uint32_t*)ptr1) = 0;										/* By pointer */
-	*((uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE)) = 1;	/* By direct ID */
+	*((uint32_t*)ptr1) = 0; /* By pointer */
+	*((uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE)) = 1; /* By direct ID */
 	*((uint32_t*)ptr3) = 0;
 	*((uint8_t*)ptr4) = 0;
 	*((uint8_t*)ptr5) = 1;
@@ -219,26 +217,26 @@ int main()
 	pOS_scheduler::link_thread(7, &thread_8);
 
 	/* Initialize thread stacks */
-	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
+	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_512);
 
 	/* Enable all threads */
-	for(uint32_t i = 0; i < NUM_OF_THREADS; i++)
+	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 		pOS_scheduler::enable_thread(i);
 
 	/* Add some random tasks */
 	uint32_t id = 0;
-	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, pOS_task_priority::normal, &id);
+	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, 1, pOS_task_priority::normal, &id);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&simple_loop_task, &simple_loop_task_return, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&simple_loop_task, &simple_loop_task_return, 2, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&led_pwm_fade_task, &led_pwm_fade_task_return, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&led_pwm_fade_task, &led_pwm_fade_task_return, 20, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, 1, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&uart_input_task, 0, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&uart_input_task, 0, 20, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&wait_for_other_board, 0, pOS_task_priority::normal, &id);
+	pOS_scheduler::create_task(&wait_for_other_board, 0, 20, pOS_task_priority::normal, &id);
 	pOS_scheduler::enable_task(id);
 	
 	/* Start the kernel */
