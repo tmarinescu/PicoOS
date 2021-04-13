@@ -22,6 +22,7 @@ public:
 	static void append_buffer(uint8_t chr);
 	static uint8_t* get_buffer();
 	static uint8_t wait_for_input();
+	static void interpret_command();
 };
 
 /* Used for our development board */
