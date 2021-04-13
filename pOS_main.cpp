@@ -11,9 +11,12 @@
 /* Used for LED task */
 #define MEM_ID_LED_STATE	0xAABBCCDD
 #define MEM_ID_LED_FADE		0xAABBCCCC
+#define MEM_ID_MCU_STATUS	0xBBAACCDD
+#define MEM_ID_UART_INPUT	0xAAAAAAAA
 
 /* Global mutex for testing */
 pOS_mutex g_mutex;
+pOS_mutex g_uart_mutex;
 
 /* Critical section for testing */
 pOS_critical::pOS_critical_section g_crit_sec;
@@ -42,11 +45,10 @@ int32_t led_pwm_fade_task()
 {
 	static uint32_t inc2 = 0;
 	
-	g_crit_sec.enter();
+	uint8_t* led_state = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_STATE);
+	uint32_t* led_fade = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_FADE);
+	
 	inc2++;
-
-	uint8_t* led_state = (uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE);
-	uint32_t* led_fade = (uint32_t*)pOS_memory::get_pointer(MEM_ID_LED_FADE);
 	
 	if (*led_state == 1)
 	{
@@ -69,7 +71,6 @@ int32_t led_pwm_fade_task()
 	}
 	
 	pOS_gpio::get(25)->set_pwm(*led_fade); /* Set the PWM for LED */
-	g_crit_sec.exit();
 	return 1;
 }
 
@@ -103,18 +104,25 @@ void delayed_loop_task_return(int32_t ret)
 /* This is an example task used to initialize global pointers */
 int32_t global_memory_init_task()
 {
+	g_crit_sec.enter();
 	/* Allocate the IDs */
 	void* ptr1 = pOS_memory::allocate(MEM_ID_LED_FADE, 4);
+	void* ptr3 = pOS_memory::allocate(MEM_ID_MCU_STATUS, 4);
 	void* ptr2 = pOS_memory::allocate(MEM_ID_LED_STATE, 1);
+	void* ptr4 = pOS_memory::allocate(MEM_ID_UART_INPUT, 1);
 	
 	/* Zero out memory as a test */
 	pOS_memory::zero(MEM_ID_LED_FADE);	/* By direct ID */
 	pOS_memory::zero(ptr2);				/* By pointer */
+	pOS_memory::zero(ptr3);
+	pOS_memory::zero(ptr4);
 	
 	/* Initialize default values */
 	*((uint32_t*)ptr1) = 0;										/* By pointer */
 	*((uint8_t*)pOS_memory::get_pointer(MEM_ID_LED_STATE)) = 1;	/* By direct ID */
-	
+	*((uint32_t*)ptr3) = 0;
+	*((uint8_t*)ptr4) = 0;
+	g_crit_sec.exit();
 	return 4;
 }
 
@@ -128,19 +136,55 @@ void global_memory_init_task_return(int32_t ret)
 
 int32_t uart_input_task()
 {
+	uint32_t* mcu_ptr = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
+	
+	if (*mcu_ptr == 0)
+	{
+		/* MCU handshake didn't succeed/timeout */
+		return 0;
+	}
+	
+	uint8_t* uart_ptr = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_UART_INPUT);
+	
+	if (*uart_ptr == 0) /* First time printing */
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"picoOS>>");
+		*uart_ptr = 1;
+	}
+		
 	uint8_t chr = pOS_communication_terminal::wait_for_input();
 	if (chr == '\r')
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"\nInput>>");
+		pOS_communication_terminal::print_string((uint8_t*)"\npicoOS>>");
 	}
 	else
 	{
 		if (isprint(chr)) /* Check if character is printable */
 		{
-			pOS_communication_terminal::append_buffer(chr);
 			pOS_communication_terminal::print_char(chr);
 		}
 	}
+	return 0;
+}
+
+int32_t wait_for_other_board()
+{
+	uint32_t* mcu_status = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
+	
+	g_uart_mutex.lock();
+	pOS_communication_terminal::print_string((uint8_t*)"Searching for MCU handshake...\n");
+	bool value = pOS_communication_mcu::initialize(uart1, 16, 17);
+	if (!value)
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"MCU handshake timed out!\n");
+		*mcu_status = 2;
+	}
+	else
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"MCU handshake successful!\n");
+		*mcu_status = 1;
+	}
+	g_uart_mutex.unlock();
 	return 0;
 }
 
@@ -159,7 +203,6 @@ int main()
 	pOS_communication_terminal::initialize(uart0, 0, 1);
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
-	pOS_communication_terminal::print_string((uint8_t*)"Input>>");
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -184,15 +227,17 @@ int main()
 
 	/* Add some random tasks */
 	uint32_t id = 0;
+	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, pOS_task_priority::normal, &id);
+	pOS_scheduler::enable_task(id);
 	pOS_scheduler::create_task(&simple_loop_task, &simple_loop_task_return, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
 	pOS_scheduler::create_task(&led_pwm_fade_task, &led_pwm_fade_task_return, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
 	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, pOS_task_priority::normal, &id);
-	pOS_scheduler::enable_task(id);
 	pOS_scheduler::create_task(&uart_input_task, 0, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::enable_task(id);
+	pOS_scheduler::create_task(&wait_for_other_board, 0, pOS_task_priority::normal, &id);
 	pOS_scheduler::enable_task(id);
 	
 	/* Start the kernel */

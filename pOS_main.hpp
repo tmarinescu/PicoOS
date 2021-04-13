@@ -11,4 +11,10 @@
 #define MEMORY_POOL 256
 #define MEMORY_META_POOL 128
 
+/* Used for our custom dev board */
+#define BOARD_PICO_ZERO
+//#define BOARD_PICO_ONE
+
+#define HANDSHAKE_TIMEOUT 2500
+
 #endif

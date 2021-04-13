@@ -99,7 +99,7 @@ void* pOS_memory::allocate(uint32_t id, uint32_t size)
 			mem->location = &_pool[start_offset];
 			mem->id = id;
 			mem->size = size;
-			return mem->location;
+			return (void *)mem->location;
 		}
 		else
 		{
@@ -145,7 +145,7 @@ void* pOS_memory::get_pointer(uint32_t id)
 	{
 		if (_pool_meta[i].id == id)
 		{
-			return _pool_meta[i].location;
+			return (void *)_pool_meta[i].location;
 		}
 	}
 	
@@ -186,3 +186,13 @@ bool pOS_memory::zero(uint32_t id)
 	return false;
 }
 	
+void* pOS_memory::wait_for_memory_id(uint32_t id)
+{
+	void* ptr = get_pointer(id);
+	while (ptr == 0)
+	{
+		ptr = get_pointer(id);
+	}
+	
+	return ptr;
+}
