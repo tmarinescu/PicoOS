@@ -4,6 +4,9 @@
 #include "pOS_memory.hpp"
 #include "pOS_critical_section.hpp"
 #include "pOS_mutex.hpp"
+#include "pOS_communication.hpp"
+
+#include <ctype.h>
 
 /* Used for LED task */
 #define MEM_ID_LED_STATE	0xAABBCCDD
@@ -123,6 +126,24 @@ void global_memory_init_task_return(int32_t ret)
 	}
 }
 
+int32_t uart_input_task()
+{
+	uint8_t chr = pOS_communication_terminal::wait_for_input();
+	if (chr == '\r')
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"\nInput>>");
+	}
+	else
+	{
+		if (isprint(chr)) /* Check if character is printable */
+		{
+			pOS_communication_terminal::append_buffer(chr);
+			pOS_communication_terminal::print_char(chr);
+		}
+	}
+	return 0;
+}
+
 
 int main() 
 {
@@ -134,7 +155,11 @@ int main()
 	/* Initialize GPIO system and LED */
 	pOS_gpio::initialize_all();
 	pOS_gpio::get(25)->set_function(pOS_gpio_function::pwm);
-	//pOS_gpio::get(25)->set_type(pOS_gpio_type::output)->disable();
+	
+	pOS_communication_terminal::initialize(uart0, 0, 1);
+	pOS_communication_terminal::clear_terminal();
+	pOS_communication_terminal::reset_buffer();
+	pOS_communication_terminal::print_string((uint8_t*)"Input>>");
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -166,6 +191,8 @@ int main()
 	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
 	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, pOS_task_priority::normal, &id);
+	pOS_scheduler::enable_task(id);
+	pOS_scheduler::create_task(&uart_input_task, 0, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
 	
 	/* Start the kernel */

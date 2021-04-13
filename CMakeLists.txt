@@ -17,7 +17,8 @@ add_executable(hello_multicore
         pOS_memory.cpp
         pOS_critical_section.cpp
         pOS_semaphore.cpp
-        pOS_mutex.cpp)
+        pOS_mutex.cpp
+        pOS_communication.cpp)
 
 # Add pico_multicore which is required for multicore functionality
 target_link_libraries(hello_multicore
