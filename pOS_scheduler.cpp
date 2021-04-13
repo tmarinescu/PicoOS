@@ -6,7 +6,8 @@
 extern "C"
 {
 	volatile uint32_t** pOS_stack_ptr; /* Used for context switching */
-	
+	volatile uint32_t pOS_quanta;
+	volatile uint32_t pOS_tick;
 	/* Called by context switch. Stack swapping happens in update() */
 	void pOS_scheduler_tick()
 	{
@@ -29,7 +30,6 @@ uint32_t pOS_scheduler::_stack_offset;
 uint32_t pOS_scheduler::_task_count;
 uint32_t pOS_scheduler::_thread_init_offset;
 	
-volatile uint32_t pOS_scheduler::_tick;
 volatile uint32_t pOS_scheduler::_current_thread;
 volatile uint32_t pOS_scheduler::_task_index;
 	
@@ -99,6 +99,7 @@ void pOS_scheduler::update()
 					{
 						_tasks[_inner_index].attached_thread = (uint32_t *)_active_thread;
 						_active_thread->attached_task = (uint32_t*)&_tasks[_inner_index];
+						pOS_quanta = _tasks[_inner_index].quanta_max;
 						_found_task = true;
 						_task_index = _inner_index;
 						break;
@@ -112,6 +113,7 @@ void pOS_scheduler::update()
 				{
 					_tasks[_inner_index].attached_thread = (uint32_t *)_active_thread;
 					_active_thread->attached_task = (uint32_t*)&_tasks[_inner_index];
+					pOS_quanta = _tasks[_inner_index].quanta_max;
 					_found_task = true;
 					_task_index = _inner_index;
 					break;
@@ -138,6 +140,11 @@ void pOS_scheduler::update()
 			}
 			
 			_active_thread = &_threads[_current_thread];
+			if (_active_thread->attached_task != 0)
+			{
+				pOS_task* _task = (pOS_task*)_active_thread->attached_task;
+				pOS_quanta = _task->quanta_max;
+			}
 		}
 	}
 	
@@ -147,17 +154,17 @@ void pOS_scheduler::update()
 	
 	/* Swap stacks to the thread */
 	pOS_stack_ptr = &_threads[_current_thread].stack;
-	_tick++;
 	return;
 }
 
 bool pOS_scheduler::initialize()
 {
+	pOS_quanta = 0;
 	_running = false;
 	_stack_offset = 0;
 	_task_count = 0;
 	_thread_init_offset = 0;
-	_tick = 0;
+	pOS_tick = 0;
 	_current_thread = 0;
 	_task_index = 0;
 	_active_thread = 0;
@@ -214,12 +221,12 @@ void pOS_scheduler::jump_start()
 	
 uint32_t pOS_scheduler::get_tick()
 {
-	return _tick;
+	return pOS_tick;
 }
 
 void pOS_scheduler::set_tick(uint32_t tick)
 {
-	_tick = tick;
+	pOS_tick = tick;
 }
 
 uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_t size)
@@ -330,10 +337,10 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_thread_size size)
 	
 	_thread->stack_size = (uint32_t)size;
 	_thread->used_stack = 0;
-	_stack[_stack_offset + (uint32_t)size - 1] = 0x01000000; //xPSR
-	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->id]; //PC
-	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id; //R0 (argument passed to threads to identify itself by ID)
-	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16]; //start of the stack pointer
+	_stack[_stack_offset + (uint32_t)size - 1] = 0x01000000;  //xPSR
+	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->id];  //PC
+	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id;  //R0 (argument passed to threads to identify itself by ID)
+	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16];  //start of the stack pointer
 	
 	if(_thread_init_offset == 0)
 		pOS_stack_ptr = &_thread->stack;
@@ -362,7 +369,7 @@ bool pOS_scheduler::set_thread_speed(int32_t thread_id, pOS_thread_speed speed)
 }
 
 	
-bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
+bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), uint32_t quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
 {
 	/* Disable all interrupts and remember mask */
 	uint32_t status = pOS_critical::disable_and_save_interrupts();
@@ -390,6 +397,8 @@ bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatil
 			_tasks[_index].attached_thread = 0;
 			_tasks[_index].return_handler = ret_handler;
 			_tasks[_index].function_handler = function;
+			_tasks[_index].quanta_max = quanta;
+			_tasks[_index].quanta = quanta;
 			_task_count++;
 			
 			/* Restore all interrupts */
@@ -501,4 +510,20 @@ void pOS_scheduler::set_thread_address(uint32_t index, uint32_t addr)
 uint32_t pOS_scheduler::get_thread_address(uint32_t index)
 {
 	return _thread_addresses[index];
+}
+
+void pOS_scheduler::sleep(uint32_t ms)
+{
+	uint32_t tick = pOS_tick;
+	while (pOS_tick - tick < ms)
+	{
+		yield();
+	}
+	
+	return;
+}
+
+void pOS_scheduler::yield()
+{
+	pOS_quanta = 0;
 }
