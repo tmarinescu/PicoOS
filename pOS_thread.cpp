@@ -60,6 +60,7 @@ void thread_1(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -105,6 +106,7 @@ void thread_2(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -150,6 +152,7 @@ void thread_3(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -195,6 +198,7 @@ void thread_4(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -240,6 +244,7 @@ void thread_5(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -285,6 +290,7 @@ void thread_6(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -330,6 +336,7 @@ void thread_7(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
@@ -375,6 +382,7 @@ void thread_8(int32_t thread)
 					
 							_task->last_execute = pOS_scheduler::get_tick();
 							_thread->attached_task = 0;
+							pOS_scheduler::yield();
 						}
 					}
 				}
