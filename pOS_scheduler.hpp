@@ -22,6 +22,7 @@ private:
 	static uint32_t _task_count;
 	static uint32_t _thread_init_offset;
 	
+	static volatile uint32_t _tick;
 	static volatile uint32_t _current_thread;
 	static volatile uint32_t _task_index;
 	
@@ -49,7 +50,7 @@ public:
 	static bool is_thread_initialized(int32_t thread_id);
 	static bool set_thread_speed(int32_t thread_id, pOS_thread_speed speed);
 	
-	static bool create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), uint32_t quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop = false, uint32_t delayed_start = 0);
+	static bool create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_priority prio, uint32_t* ret_id, bool loop = false, uint32_t delayed_start = 0);
 	static bool remove_task(uint32_t task_id);
 	static bool enable_task(uint32_t task_id);
 	static bool disable_task(uint32_t task_id);
@@ -60,9 +61,6 @@ public:
 	
 	static void set_thread_address(uint32_t index, uint32_t addr);
 	static uint32_t get_thread_address(uint32_t index);
-	
-	static void sleep(uint32_t ms);
-	static void yield();
 };
 
 #endif

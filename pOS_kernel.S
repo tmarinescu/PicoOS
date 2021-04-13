@@ -16,17 +16,10 @@ pOS_main_stack: .word 0
 .global pOS_enable_interrupts
 .extern pOS_scheduler_tick
 .extern pOS_stack_ptr
-.extern pOS_quanta
-.extern pOS_tick
 
 .thumb_func
 isr_systick:					@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	CPSID IF
-
-	LDR R0, =pOS_quanta
-	LDR R1, [R0]
-	CMP R1, #0
-	BNE internal_skip
 
 	PUSH {R4-R7}				@Store low registers
 	MOV R4, R8
@@ -48,11 +41,6 @@ isr_systick:					@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 
 	BL pOS_scheduler_tick		@Handle scheduler
 
-	LDR R0, =pOS_tick
-	LDR R1, [R0]
-	ADDS R1, R1, #1
-	STR R1, [R0]
-
 	POP {R0}
 	MOV LR, R0
 
@@ -70,19 +58,6 @@ isr_systick:					@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 
 	CPSIE IF
 	BX LR						@Exit back out of interrupt
-
-.thumb_func
-internal_skip:
-	LDR R0, =pOS_tick
-	LDR R1, [R0]
-	ADDS R1, R1, #1
-	STR R1, [R0]
-	LDR R0, =pOS_quanta
-	LDR R1, [R0]
-	SUBS R1, R1, #1
-	STR R1, [R0]
-	CPSIE IF
-	BX LR
 
 pOS_kernel_start:
 	CPSID IF
