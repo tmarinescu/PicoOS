@@ -8,7 +8,7 @@ class pOS_memory_block
 public:
 	uint32_t id;			/* 0 = unused */
 	uint32_t size;
-	void* location;
+	volatile void* location;
 	pOS_memory_block();
 	~pOS_memory_block();
 };
@@ -26,6 +26,7 @@ public:
 	static void* get_pointer(uint32_t id);
 	static bool zero(void* ptr);
 	static bool zero(uint32_t id);
+	static void* wait_for_memory_id(uint32_t id);
 	static bool is_memory_chunk_taken(uint32_t offset, uint32_t ignore_id);
 };
 
