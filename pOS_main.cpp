@@ -172,16 +172,16 @@ int32_t wait_for_other_board()
 	uint32_t* mcu_status = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
 	
 	g_uart_mutex.lock();
-	pOS_communication_terminal::print_string((uint8_t*)"Searching for MCU handshake...\n");
+	pOS_communication_terminal::print_string((uint8_t*)"Searching for MCU handshake...");
 	bool value = pOS_communication_mcu::initialize(uart1, 16, 17);
 	if (!value)
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"MCU handshake timed out!\n");
+		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake timed out!\n");
 		*mcu_status = 2;
 	}
 	else
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"MCU handshake successful!\n");
+		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake successful!\n");
 		*mcu_status = 1;
 	}
 	g_uart_mutex.unlock();

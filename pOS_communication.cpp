@@ -111,12 +111,19 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	
 	uint32_t _timeout = 0;
 	uint32_t _tick = pOS_scheduler::get_tick();
+	uint32_t _period_tick = _tick;
 	while (!pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
 		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
 		{
 			return false; /* Time out */
+		}
+		
+		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		{
+			pOS_communication_terminal::print_char('.');
+			_period_tick = pOS_scheduler::get_tick();
 		}
 	}
 	
