@@ -369,7 +369,7 @@ bool pOS_scheduler::set_thread_speed(int32_t thread_id, pOS_thread_speed speed)
 }
 
 	
-bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), uint32_t quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
+bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_quanta quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop, uint32_t delayed_start)
 {
 	/* Disable all interrupts and remember mask */
 	uint32_t status = pOS_critical::disable_and_save_interrupts();
@@ -397,8 +397,8 @@ bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatil
 			_tasks[_index].attached_thread = 0;
 			_tasks[_index].return_handler = ret_handler;
 			_tasks[_index].function_handler = function;
-			_tasks[_index].quanta_max = quanta;
-			_tasks[_index].quanta = quanta;
+			_tasks[_index].quanta_max = (uint32_t)quanta;
+			_tasks[_index].quanta = (uint32_t)quanta;
 			_task_count++;
 			
 			/* Restore all interrupts */

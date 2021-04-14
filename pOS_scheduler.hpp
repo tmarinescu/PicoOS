@@ -49,7 +49,7 @@ public:
 	static bool is_thread_initialized(int32_t thread_id);
 	static bool set_thread_speed(int32_t thread_id, pOS_thread_speed speed);
 	
-	static bool create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), uint32_t quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop = false, uint32_t delayed_start = 0);
+	static bool create_task(int32_t(*volatile function)(void), void(*volatile ret_handler)(int32_t), pOS_task_quanta quanta, pOS_task_priority prio, uint32_t* ret_id, bool loop = false, uint32_t delayed_start = 0);
 	static bool remove_task(uint32_t task_id);
 	static bool enable_task(uint32_t task_id);
 	static bool disable_task(uint32_t task_id);

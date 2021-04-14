@@ -54,4 +54,11 @@ enum class pOS_thread_size
 	byte_2048 = 2048
 };
 
+enum class pOS_task_quanta
+{
+	heavy = 50,
+	normal = 10,
+	small = 1,
+};
+
 #endif

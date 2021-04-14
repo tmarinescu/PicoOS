@@ -226,17 +226,17 @@ int main()
 
 	/* Add some random tasks */
 	uint32_t id = 0;
-	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, 1, pOS_task_priority::normal, &id);
+	pOS_scheduler::create_task(&global_memory_init_task, &global_memory_init_task_return, pOS_task_quanta::small, pOS_task_priority::normal, &id);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&simple_loop_task, &simple_loop_task_return, 2, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&simple_loop_task, &simple_loop_task_return, pOS_task_quanta::small, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&led_pwm_fade_task, &led_pwm_fade_task_return, 20, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&led_pwm_fade_task, &led_pwm_fade_task_return, pOS_task_quanta::heavy, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, 1, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&delayed_loop_task, &delayed_loop_task_return, pOS_task_quanta::small, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&uart_input_task, 0, 20, pOS_task_priority::normal, &id, true, 0);
+	pOS_scheduler::create_task(&uart_input_task, 0, pOS_task_quanta::small, pOS_task_priority::normal, &id, true, 0);
 	pOS_scheduler::enable_task(id);
-	pOS_scheduler::create_task(&wait_for_other_board, 0, 20, pOS_task_priority::normal, &id);
+	pOS_scheduler::create_task(&wait_for_other_board, 0, pOS_task_quanta::heavy, pOS_task_priority::normal, &id);
 	pOS_scheduler::enable_task(id);
 	
 	/* Start the kernel */
