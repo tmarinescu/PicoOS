@@ -20,6 +20,7 @@ extern "C"
 
 /* Variables used by scheduler */
 volatile bool pOS_scheduler::_running; 
+bool pOS_scheduler::_first_run;
 pOS_thread pOS_scheduler::_threads[NUM_OF_THREADS];
 pOS_task pOS_scheduler::_tasks[NUM_OF_TASKS];
 
@@ -58,11 +59,18 @@ void pOS_scheduler::update()
 	if (_running)
 		return;
 	
-	_current_thread++;
-	if (_current_thread >= NUM_OF_THREADS)
-		_current_thread = 0;
+	if (!_first_run)
+	{
+		_current_thread++;
+		if (_current_thread >= NUM_OF_THREADS)
+			_current_thread = 0;
+	}
+	else
+	{
+		_first_run = true;
+	}
 	
-	/* Try to find our first thread. By design this skips over the first thread when the scheduler first starts (needs to be fixed) */
+	/* Try to find our first thread. */
 	uint32_t _mem_thread = _current_thread;
 	while (!_threads[_current_thread].enabled) /* Can cause infinite loop if all threads are disabled, needs a better design */
 	{
@@ -159,6 +167,7 @@ void pOS_scheduler::update()
 
 bool pOS_scheduler::initialize()
 {
+	_first_run = false;
 	pOS_quanta = 0;
 	_running = false;
 	_stack_offset = 0;

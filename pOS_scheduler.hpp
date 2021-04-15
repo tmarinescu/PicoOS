@@ -11,6 +11,7 @@ class pOS_scheduler
 {
 private:
 	static volatile bool _running;
+	static bool _first_run;
 	
 	static uint32_t _thread_addresses[NUM_OF_THREADS];
 	
