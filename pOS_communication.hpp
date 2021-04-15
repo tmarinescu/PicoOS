@@ -30,7 +30,7 @@ class pOS_communication_mcu
 {
 private:
 	static uint32_t _index;
-	static uint8_t _buffer[TERMINAL_BUFFER_SIZE];
+	static uint8_t _buffer[UART_BUFFER_SIZE];
 	static volatile uart_inst_t* _assigned_uart;
 	static bool _handshake_confirmed;
 	
