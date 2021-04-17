@@ -218,7 +218,7 @@ int main()
 
 	/* Initialize thread stacks */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_512);
+		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_256);
 
 	/* Enable all threads */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)

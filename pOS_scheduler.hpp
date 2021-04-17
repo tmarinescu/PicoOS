@@ -1,6 +1,9 @@
 #ifndef _POS_SCHEDULER_H_
 #define _POS_SCHEDULER_H_
 
+#define STACK_GUARD 0xA0B0C0D0
+#define STACK_GUARD_SIZE 16
+
 #include "pOS_main.hpp"
 #include "pOS_thread.hpp"
 #include "pOS_task.hpp"
@@ -37,7 +40,7 @@ public:
 	
 	static uint32_t get_tick();
 	static void set_tick(uint32_t tick);
-	static uint32_t calculate_checksum(volatile uint32_t* stack_loc, uint32_t size);
+	static uint32_t calculate_checksum(volatile uint32_t* stack_loc, uint32_t offset, uint32_t size);
 	static int32_t find_thread_critical(uint32_t needed_stack);
 	
 	static bool link_thread(int32_t thread_id, void(*volatile thrd)(int32_t));

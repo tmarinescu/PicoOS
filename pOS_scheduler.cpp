@@ -16,6 +16,10 @@ extern "C"
 		pOS_scheduler::resume();
 		return;
 	}
+	
+	uint32_t pOS_stack_upper_limit = 0;
+	uint32_t pOS_stack_lower_limit = 0;
+	uint32_t pOS_kernel_debug_values[9]; /* Used to send data to hard fault */
 }
 
 /* Variables used by scheduler */
@@ -59,6 +63,8 @@ void pOS_scheduler::update()
 	if (_running)
 		return;
 	
+	pOS_kernel_debug_values[0] = _current_thread;
+	
 	if (!_first_run)
 	{
 		_current_thread++;
@@ -84,8 +90,64 @@ void pOS_scheduler::update()
 		}
 	}
 	
+	pOS_kernel_debug_values[1] = _current_thread;
+	
+	if (_active_thread != 0)
+	{
+		for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)
+		{
+			if ((_active_thread->stack_start - _active_thread->stack_size)[i] != STACK_GUARD)
+			{
+				_active_thread = 0;
+			}
+		}
+			
+		_active_thread->stack_total_checksum = calculate_checksum(_active_thread->stack_start, 0, _active_thread->stack_size);
+		_active_thread->used_stack =  (uint32_t)_active_thread->stack_start - (uint32_t)*pOS_stack_ptr;
+		pOS_kernel_debug_values[2] = _active_thread->stack_size;
+		pOS_kernel_debug_values[3] = _active_thread->used_stack;
+		if (_active_thread->attached_task != 0)
+		{
+			pOS_kernel_debug_values[4] = ((pOS_task*)_active_thread->attached_task)->id;
+		}
+		else
+		{
+			pOS_kernel_debug_values[4] = 0x7777;
+		}
+			
+		_active_thread->stack_used_checksum = calculate_checksum(_active_thread->stack_start, 0, _active_thread->used_stack);
+		_active_thread->stack_free_checksum = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, (_active_thread->stack_size - _active_thread->used_stack));
+		if ((uint32_t)*pOS_stack_ptr > ((uint32_t)_active_thread->stack_start))
+		{
+			_active_thread = 0;
+		}
+	}
+	
 	/* Found a thread */
 	_active_thread = &_threads[_current_thread];
+	
+	if (_active_thread->attached_task != 0)
+	{
+		pOS_kernel_debug_values[5] = ((pOS_task*)_active_thread->attached_task)->id;
+	}
+	else
+	{
+		pOS_kernel_debug_values[5] = 0x7777;
+	}
+	
+	if (_active_thread->stack_total_checksum != 0)
+	{
+		uint32_t total_stack = calculate_checksum(_active_thread->stack_start, 0, _active_thread->stack_size);
+		uint32_t used_stack = calculate_checksum(_active_thread->stack_start, 0, _active_thread->used_stack);
+		uint32_t free_stack = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, (_active_thread->stack_size - _active_thread->used_stack));
+		if ((_active_thread->stack_total_checksum != total_stack) || (_active_thread->stack_used_checksum != used_stack) || (_active_thread->stack_free_checksum != free_stack))
+		{
+			while (1)
+			{
+				_active_thread = 0;
+			}
+		}
+	}
 	
 	/* Find a task for it */
 	if (_active_thread->attached_task == 0)
@@ -162,6 +224,10 @@ void pOS_scheduler::update()
 	
 	/* Swap stacks to the thread */
 	pOS_stack_ptr = &_threads[_current_thread].stack;
+	
+	pOS_stack_lower_limit = (uint32_t)_threads[_current_thread].stack_start;
+	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - _threads[_current_thread].stack_size);
+	
 	return;
 }
 
@@ -194,9 +260,12 @@ bool pOS_scheduler::initialize()
 		_threads[i].size = pOS_thread_size::byte_32;
 		_threads[i].speed = pOS_thread_speed::normal;
 		_threads[i].stack = 0;
-		_threads[i].stack_crc32 = 0;
+		_threads[i].stack_total_checksum = 0;
+		_threads[i].stack_used_checksum = 0;
+		_threads[i].stack_free_checksum = 0;
 		_threads[i].stack_size = 0;
 		_threads[i].used_stack = 0;
+		_threads[i].stack_start = 0;
 		_thread_addresses[i] = 0;
 	}
 	
@@ -238,9 +307,14 @@ void pOS_scheduler::set_tick(uint32_t tick)
 	pOS_tick = tick;
 }
 
-uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_t size)
+uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_t offset, uint32_t size)
 {
-	return 0;
+	uint32_t x = 0;
+	for (uint32_t i = 0; i < size; i++)
+	{
+		x ^= stack_loc[(-offset) - i];
+	}
+	return x;
 }
 
 int32_t pOS_scheduler::find_thread_critical(uint32_t needed_stack)
@@ -275,8 +349,6 @@ bool pOS_scheduler::enable_thread(int32_t thread_id)
 	
 	if (_active_thread == 0)
 		_active_thread = _thread;
-	
-	_active_thread->stack_crc32 = 0;
 	
 	return true;
 }
@@ -345,14 +417,28 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_thread_size size)
 	}
 	
 	_thread->stack_size = (uint32_t)size;
+	_thread->stack_total_checksum = 0;
+	_thread->stack_used_checksum = 0;
+	_thread->stack_free_checksum = 0;
 	_thread->used_stack = 0;
 	_stack[_stack_offset + (uint32_t)size - 1] = 0x01000000;  //xPSR
 	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->id];  //PC
 	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id;  //R0 (argument passed to threads to identify itself by ID)
 	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16];  //start of the stack pointer
+	_thread->stack_start = (uint32_t*)&_stack[_stack_offset + (uint32_t)size];
 	
-	if(_thread_init_offset == 0)
+	for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)
+	{
+		_stack[_stack_offset + i] = STACK_GUARD;
+	}
+	
+	if (_thread_init_offset == 0)
+	{
 		pOS_stack_ptr = &_thread->stack;
+		
+		pOS_stack_lower_limit = (uint32_t)_thread->stack_start;
+		pOS_stack_upper_limit = (uint32_t)&_stack[_stack_offset];
+	}
 	
 	_stack_offset += (uint32_t)size;
 	_thread->attached_task = 0;
@@ -392,6 +478,7 @@ bool pOS_scheduler::create_task(int32_t(*volatile function)(void), void(*volatil
 		}
 		else
 		{
+			_tasks[_index].id = _index;
 			_tasks[_index].initialized = true;
 			_tasks[_index].black_listed = false;
 			_tasks[_index].enabled = false;

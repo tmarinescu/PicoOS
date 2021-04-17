@@ -136,13 +136,6 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	_handshake_confirmed = false;
 	_assigned_uart = 0;
 	
-	/* Swap the pins for each board */
-#ifdef BOARD_PICO_ONE
-	uint32_t temp = tx_pin;
-	tx_pin = rx_pin;
-	rx_pin = temp;
-#endif
-
 	pOS_gpio::get(tx_pin)->set_type(pOS_gpio_type::input);
 	pOS_gpio::get(rx_pin)->set_type(pOS_gpio_type::output)->enable();
 	

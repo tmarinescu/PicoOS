@@ -14,7 +14,11 @@ public:
 	
 	uint32_t stack_size;
 	uint32_t used_stack;
-	uint32_t stack_crc32;
+	
+	uint32_t* stack_start;
+	uint32_t stack_total_checksum;
+	uint32_t stack_used_checksum;
+	uint32_t stack_free_checksum;
 	
 	pOS_thread_error error_code;
 	pOS_thread_speed speed;
