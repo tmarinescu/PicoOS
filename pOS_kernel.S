@@ -31,7 +31,7 @@ isr_hardfault:		@Gather some info from the scheduler and kernel and dump them in
 	LDR R0, =pOS_kernel_debug_values			
 	LDR R1, [R0, #28]
 	MOV R8, R1
-	LDR R1, [R0, #32]		@Stack flag
+	LDR R1, [R0, #32]		@Stack flag (0x1337 = stack underflow, 0x7331 = stack overflow)
 	MOV R9, R1
 
 	@Deal with the low registers
@@ -45,34 +45,51 @@ isr_hardfault:		@Gather some info from the scheduler and kernel and dump them in
 
 	NOP
 
-	@Reset the CPU
+	@Reset the CPU (for debug purposes only, do not ignore the error, fix it)
 	LDR R0, =0xE000ED0C
 	LDR R1, =0x5FA0004
 	STR R1, [R0]
 
 .thumb_func
-isr_systick:	@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
-	CPSID IF
-
-	@-------DO NOT SPLIT THIS UP, BRANCHING AWAY MIGHT CAUSE A HARD FAULT BEFORE IT IS REPORTED-------
-	LDR R0, =pOS_stack_lower_limit		@Check if the stack underflowed
-	LDR R0, [R0]
-	CMP SP, R0
-	LDR R0, =pOS_kernel_debug_values
-	LDR R1, =0x88
-	STR R1, [R0, #32]
-	BGT isr_hardfault
-	@--------------------------------------------------------------------------------------------------
-
-	@-------DO NOT SPLIT THIS UP, BRANCHING AWAY MIGHT CAUSE A HARD FAULT BEFORE IT IS REPORTED-------
+check_upper_fault:
 	LDR R0, =pOS_stack_upper_limit		@Check if stack overflowed
 	LDR R0, [R0]
 	CMP SP, R0
+	BLT set_upper_fault_flag
+	BX LR
+
+.thumb_func
+check_lower_fault:
+	LDR R0, =pOS_stack_lower_limit		@Check if the stack underflowed
+	LDR R0, [R0]
+	CMP SP, R0
+	BGT set_lower_fault_flag
+	BX LR
+
+.thumb_func
+set_lower_fault_flag:
 	LDR R0, =pOS_kernel_debug_values
-	LDR R1, =0x99
+	LDR R1, =0x1337
 	STR R1, [R0, #32]
-	BLT isr_hardfault
-	@--------------------------------------------------------------------------------------------------
+	B isr_hardfault
+
+.thumb_func
+set_upper_fault_flag:
+	LDR R0, =pOS_kernel_debug_values
+	LDR R1, =0x7331
+	STR R1, [R0, #32]
+	B isr_hardfault
+
+.thumb_func
+isr_systick:	@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
+	CPSID IF
+
+	@Check both stack limits (This is not fool proof, the stack can corrupt and hard fault outside the kernel routine)
+	PUSH {LR}
+	BL check_upper_fault
+	BL check_lower_fault
+	POP {R0}
+	MOV LR, R0
 
 	@Check if task quanta is 0, if not then ignore
 	LDR R0, =pOS_quanta

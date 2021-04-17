@@ -137,11 +137,19 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	_assigned_uart = 0;
 	
 	pOS_gpio::get(tx_pin)->set_type(pOS_gpio_type::input);
-	pOS_gpio::get(rx_pin)->set_type(pOS_gpio_type::output)->enable();
 	
-	uint32_t _timeout = 0;
+#ifdef BOARD_PICO_ZERO
+	pOS_gpio::get(rx_pin)->set_type(pOS_gpio_type::output)->enable();
+#endif
+	
+#ifdef BOARD_PICO_ONE
+	pOS_gpio::get(rx_pin)->set_type(pOS_gpio_type::output)->disable();
+#endif
+
 	uint32_t _tick = pOS_scheduler::get_tick();
 	uint32_t _period_tick = _tick;
+	
+#ifdef BOARD_PICO_ZERO
 	while (!pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
@@ -157,6 +165,66 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 		}
 	}
 	
+	pOS_gpio::get(rx_pin)->disable();
+	
+	_tick = pOS_scheduler::get_tick();
+	_period_tick = _tick;
+	
+	while (pOS_gpio::get(tx_pin)->read())
+	{
+		/* Lock up until other MCU is responsive */
+		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		{
+			return false; /* Time out */
+		}
+		
+		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		{
+			pOS_communication_terminal::print_char('.');
+			_period_tick = pOS_scheduler::get_tick();
+		}
+	}
+#endif
+	
+#ifdef BOARD_PICO_ONE
+	while (!pOS_gpio::get(tx_pin)->read())
+	{
+		/* Lock up until other MCU is responsive */
+		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		{
+			return false; /* Time out */
+		}
+		
+		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		{
+			pOS_communication_terminal::print_char('.');
+			_period_tick = pOS_scheduler::get_tick();
+		}
+	}
+	
+	pOS_gpio::get(rx_pin)->enable();
+	
+	_tick = pOS_scheduler::get_tick();
+	_period_tick = _tick;
+	
+	while (pOS_gpio::get(tx_pin)->read())
+	{
+		/* Lock up until other MCU is responsive */
+		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		{
+			return false; /* Time out */
+		}
+		
+		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		{
+			pOS_communication_terminal::print_char('.');
+			_period_tick = pOS_scheduler::get_tick();
+		}
+	}
+	
+	pOS_gpio::get(rx_pin)->disable();
+#endif
+
 	/* Both MCUs did a GPIO handshake, now initialize uart on the same pins */
 	_assigned_uart = uart;
 	_handshake_confirmed = true;
