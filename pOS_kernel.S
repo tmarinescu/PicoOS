@@ -24,7 +24,7 @@ pOS_main_stack: .word 0
 .extern pOS_stack_upper_limit
 
 .thumb_func
-isr_hardfault:			@Gather some info from the scheduler and kernel and dump them into registers
+isr_hardfault:		@Gather some info from the scheduler and kernel and dump them into registers
 	CPSID IF
 
 	@Deal with the high registers first
@@ -51,7 +51,7 @@ isr_hardfault:			@Gather some info from the scheduler and kernel and dump them i
 	STR R1, [R0]
 
 .thumb_func
-isr_systick:			@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
+isr_systick:	@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	CPSID IF
 
 	@-------DO NOT SPLIT THIS UP, BRANCHING AWAY MIGHT CAUSE A HARD FAULT BEFORE IT IS REPORTED-------
@@ -148,24 +148,24 @@ pOS_kernel_start:
 	LDR R1, [R1]
 	MOV SP, R1
 
-	POP {R0}			@Get the argument of thread 1
-	ADD SP, SP, #52			@Skip all the other registers (4 bytes per register, R1-R12 and LR)
-	POP {R2}			@Pop the PC into R2
-	ADD SP, SP, #4			@Move stack up to set it at the PSR
+	POP {R0}						@Get the argument of thread 1
+	ADD SP, SP, #52					@Skip all the other registers (4 bytes per register, R1-R12 and LR)
+	POP {R2}						@Pop the PC into R2
+	ADD SP, SP, #4					@Move stack up to set it at the PSR
 
-	PUSH {R0-R1}			@Store R0 temporarily
+	PUSH {R0-R1}					@Store R0 temporarily
 
-	LDR R0, =0xE000E014		@SYST_RVR register
-	LDR R1, =0x1E847		@Setup SysTick reload value (System clock - 1)
+	LDR R0, =0xE000E014				@SYST_RVR register
+	LDR R1, =0x1E847				@Setup SysTick reload value (System clock - 1)
 	STR R1, [R0]
-	LDR R0, =0xE000E010		@SYST_CSR
-	MOVS R1, #0x7			@Enable SysTick and interrupt
+	LDR R0, =0xE000E010				@SYST_CSR
+	MOVS R1, #0x7					@Enable SysTick and interrupt
 	STR R1, [R0]
 
-	POP {R0-R1}			@Get value back
+	POP {R0-R1}						@Get value back
 
 	CPSIE IF
-	BX R2				@Jump to the new function
+	BX R2							@Jump to the new function
 
 .thumb_func
 pOS_disable_and_save_interrupts:
