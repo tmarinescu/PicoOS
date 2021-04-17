@@ -35,7 +35,7 @@ isr_hardfault:			@Gather some info from the scheduler and kernel and dump them i
 	MOV R9, R1
 
 	@Deal with the low registers
-	LDR R1, [R0]		@Last thread
+	LDR R1, [R0]			@Last thread
 	LDR R2, [R0, #4]		@Next thread
 	LDR R3, [R0, #8]		@Last thread stack size
 	LDR R4, [R0, #12]		@Last thread used stack size
@@ -55,7 +55,7 @@ isr_systick:			@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	CPSID IF
 
 	@-------DO NOT SPLIT THIS UP, BRANCHING AWAY MIGHT CAUSE A HARD FAULT BEFORE IT IS REPORTED-------
-	LDR R0, =pOS_stack_lower_limit			@Check if the stack underflowed
+	LDR R0, =pOS_stack_lower_limit		@Check if the stack underflowed
 	LDR R0, [R0]
 	CMP SP, R0
 	LDR R0, =pOS_kernel_debug_values
@@ -65,7 +65,7 @@ isr_systick:			@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	@--------------------------------------------------------------------------------------------------
 
 	@-------DO NOT SPLIT THIS UP, BRANCHING AWAY MIGHT CAUSE A HARD FAULT BEFORE IT IS REPORTED-------
-	LDR R0, =pOS_stack_upper_limit			@Check if stack overflowed
+	LDR R0, =pOS_stack_upper_limit		@Check if stack overflowed
 	LDR R0, [R0]
 	CMP SP, R0
 	LDR R0, =pOS_kernel_debug_values
@@ -80,12 +80,12 @@ isr_systick:			@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	CMP R1, #0
 	BNE internal_skip
 
-	PUSH {R4-R7}			@Store low registers
+	PUSH {R4-R7}					@Store low registers
 	MOV R4, R8
 	MOV R5, R9
 	MOV R6, R10
 	MOV R7, R11
-	PUSH {R4-R7}			@Store high registers
+	PUSH {R4-R7}					@Store high registers
 
 	LDR R0, =pOS_stack_ptr			@Save the stack
 	LDR R2, [R0]
@@ -113,25 +113,25 @@ isr_systick:			@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	LDR R1, [R1]
 	MOV SP, R1
 
-	POP {R4-R7}			@Pop high registers
+	POP {R4-R7}						@Pop high registers
 	MOV R8, R4
 	MOV R9, R5
 	MOV R10, R6
 	MOV R11, R7
-	POP {R4-R7}			@Pop low registers
+	POP {R4-R7}						@Pop low registers
 
 	CPSIE IF
-	BX LR			@Exit back out of interrupt
+	BX LR							@Exit back out of interrupt
 
 .thumb_func
 internal_skip:
 	LDR R0, =pOS_tick
 	LDR R1, [R0]
-	ADDS R1, R1, #1			@Increase system tick
+	ADDS R1, R1, #1					@Increase system tick
 	STR R1, [R0]
 	LDR R0, =pOS_quanta
 	LDR R1, [R0]
-	SUBS R1, R1, #1			@Decrease task quanta
+	SUBS R1, R1, #1					@Decrease task quanta
 	STR R1, [R0]
 	CPSIE IF
 	BX LR
@@ -155,17 +155,17 @@ pOS_kernel_start:
 
 	PUSH {R0-R1}			@Store R0 temporarily
 
-	LDR R0, =0xE000E014			@SYST_RVR register
-	LDR R1, =0x1E847			@Setup SysTick reload value (System clock - 1)
+	LDR R0, =0xE000E014		@SYST_RVR register
+	LDR R1, =0x1E847		@Setup SysTick reload value (System clock - 1)
 	STR R1, [R0]
-	LDR R0, =0xE000E010			@SYST_CSR
+	LDR R0, =0xE000E010		@SYST_CSR
 	MOVS R1, #0x7			@Enable SysTick and interrupt
 	STR R1, [R0]
 
 	POP {R0-R1}			@Get value back
 
 	CPSIE IF
-	BX R2			@Jump to the new function
+	BX R2				@Jump to the new function
 
 .thumb_func
 pOS_disable_and_save_interrupts:
