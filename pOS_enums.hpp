@@ -45,13 +45,11 @@ enum class pOS_thread_speed
 
 enum class pOS_thread_size
 {
-	byte_32 = 32,
-	byte_64 = 64,
-	byte_128 = 128,
 	byte_256 = 256,
 	byte_512 = 512,
 	byte_1024 = 1024,
-	byte_2048 = 2048
+	byte_2048 = 2048,
+	byte_4096 = 4096
 };
 
 enum class pOS_task_quanta

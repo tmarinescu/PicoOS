@@ -169,6 +169,7 @@ int32_t uart_input_task()
 	return 0;
 }
 
+#ifdef USE_CUSTOM_PROJECT_DEMO
 int32_t wait_for_other_board()
 {
 	uint32_t* mcu_status = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
@@ -187,6 +188,7 @@ int32_t wait_for_other_board()
 	}
 	return 0;
 }
+#endif
 
 uint8_t test_data[256];
 
@@ -202,10 +204,12 @@ int main()
 	pOS_gpio::initialize_all();
 	pOS_gpio::get(25)->set_function(pOS_gpio_function::pwm);
 	
+	/* Initialize the serial output */
 	pOS_communication_terminal::initialize(uart1, 4, 5);
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
 	
+	/*------------------- MPU TESTING -------------------*/
 	uint32_t mpu = MPU_TYPE_Register;
 	pOS_communication_terminal::print_string((uint8_t*)"MPU [i]Regions: %d\n", pOS_utilities::extract_bits(mpu, 16, 23));
 	pOS_communication_terminal::print_string((uint8_t*)"MPU [d]Regions: %d\n", pOS_utilities::extract_bits(mpu, 8, 15));
@@ -220,6 +224,7 @@ int main()
 	uint32_t x = 0;
 	x = pOS_utilities::set_bits(x, 0, 0, 1);
 	pOS_communication_terminal::print_string((uint8_t*)"Test: %d\n", x);
+	/*---------------------------------------------------*/
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -283,13 +288,15 @@ int main()
 		true);
 	pOS_scheduler::enable_task(id);
 	
+#ifdef USE_CUSTOM_PROJECT_DEMO
 	pOS_scheduler::create_task(&wait_for_other_board, 
 		0, 
 		pOS_task_quanta::heavy, 
 		pOS_task_priority::normal, 
 		&id);
 	pOS_scheduler::enable_task(id);
-	
+#endif
+
 	/* Start the kernel */
 	pOS_scheduler::jump_start();
 	while (1) ;

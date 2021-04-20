@@ -276,7 +276,7 @@ bool pOS_scheduler::initialize()
 		_threads[i].error = 0;
 		_threads[i].error_code = pOS_thread_error::none;
 		_threads[i].initialized = false;
-		_threads[i].size = pOS_thread_size::byte_32;
+		_threads[i].size = pOS_thread_size::byte_256;
 		_threads[i].speed = pOS_thread_speed::normal;
 		_threads[i].stack = 0;
 		_threads[i].stack_total_checksum = 0;

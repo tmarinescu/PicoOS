@@ -31,6 +31,7 @@
 /* Used for our custom dev board */
 #define BOARD_PICO_ZERO
 //#define BOARD_PICO_ONE
+#define USE_CUSTOM_PROJECT_DEMO
 
 #define HANDSHAKE_TIMEOUT 2500
 
