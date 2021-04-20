@@ -20,6 +20,9 @@ public:
 	static void print_char(uint8_t chr);
 	static void print_double(double num);
 	static void print_int(int32_t num);
+	static void print_hex_2(uint32_t num);
+	static void print_hex_4(uint32_t num);
+	static void print_hex_8(uint32_t num);
 	static void reset_buffer();
 	static void append_buffer(uint8_t chr);
 	static uint8_t* get_buffer();

@@ -61,21 +61,46 @@ void pOS_communication_terminal::print_string(uint8_t* str, ...)
 		switch (* ++p)
 		{
 		case 'd':
-			ival = va_arg(ap, int);
-			print_int(ival);
-			break;
+			{
+				ival = va_arg(ap, int);
+				print_int(ival);
+				break;
+			}
 		case 'f':
-			dval = va_arg(ap, double);
-			print_double(dval);
-			break;
+			{
+				dval = va_arg(ap, double);
+				print_double(dval);
+				break;
+			
+			}
 		case 's':
-			for (sval = va_arg(ap, uint8_t*); *sval; sval++)
-				print_char(*sval);
-			break;
+			{
+				for (sval = va_arg(ap, uint8_t*); *sval; sval++)
+					print_char(*sval);
+				break;
+			}
 		case 'c':
-			cval = (uint8_t)va_arg(ap, int);
-			print_char(cval);
-			break;
+			{
+				cval = (uint8_t)va_arg(ap, int);
+				print_char(cval);
+				break;
+			}
+		case '0':
+			{
+				uint8_t count = *(++p) - '0';
+				uint8_t type = *(++p);
+				ival = va_arg(ap, int);
+				if (type == 'x')
+				{
+					if (count == 2)
+						print_hex_2(ival);
+					else if (count == 4)
+						print_hex_4(ival);
+					else
+						print_hex_8(ival);
+				}
+				break;
+			}
 		default:
 			putchar(*p);
 			break;
@@ -103,6 +128,24 @@ void pOS_communication_terminal::print_double(double num)
 void pOS_communication_terminal::print_int(int32_t num)
 {
 	sprintf((char *)num_buff, "%lu", num);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
+}
+
+void pOS_communication_terminal::print_hex_2(uint32_t num)
+{
+	sprintf((char *)num_buff, "%02x", num);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
+}
+
+void pOS_communication_terminal::print_hex_4(uint32_t num)
+{
+	sprintf((char *)num_buff, "%04x", num);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
+}
+
+void pOS_communication_terminal::print_hex_8(uint32_t num)
+{
+	sprintf((char *)num_buff, "%08x", num);
 	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
 }
 	

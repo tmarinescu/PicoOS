@@ -212,9 +212,9 @@ int main()
 	pOS_communication_terminal::print_string((uint8_t*)"MPU Separate: %d\n", pOS_utilities::extract_bits(mpu, 0, 0));
 	
 	test_data[0] = 1;
-	pOS_communication_terminal::print_string((uint8_t*)"Addr: %d\n", (uint32_t)&test_data[0]);
-	pOS_memory_protection::initialize();
-	pOS_memory_protection::lock_area(0, &test_data[0], 7);
+	pOS_communication_terminal::print_string((uint8_t*)"Addr: %08x\n", (uint32_t)&test_data[0]);
+	//pOS_memory_protection::initialize();
+	//pOS_memory_protection::lock_area(0, &test_data[0], 7);
 	//test_data[0] = 2;
 	
 	uint32_t x = 0;

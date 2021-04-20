@@ -2,6 +2,7 @@
 #include "pOS_kernel_hooks.hpp"
 #include "hardware/sync.h"
 #include "pOS_critical_section.hpp"
+#include "pOS_communication.hpp"
 
 extern "C"
 {
@@ -237,6 +238,24 @@ bool pOS_scheduler::initialize()
 	pOS_quanta = 0;
 	_running = false;
 	_stack_offset = 0;
+	
+	pOS_communication_terminal::print_string((uint8_t*)"Stack offset start (ADDR: 0x%08x)\n", (uint32_t)&_stack[0]);
+	pOS_communication_terminal::print_string((uint8_t*)"Finding alignment...\n", (uint32_t)&_stack[0]);
+	for (uint32_t i = 0; i < TOTAL_MAXIMUM_STACK; i++)
+	{
+		if (((((uint32_t)&_stack[i]) & 0x000000FF) == 0)) /* Search for nearest address with 0 as the lower 8 bits (MPU base address ignores last byte) eg. (0x123456XX, 0x777788XX) */
+		{
+			_stack_offset = i;
+			pOS_communication_terminal::print_string((uint8_t*)"Stack offset found at [%d] (ADDR: 0x%08x)\n", i, (uint32_t)&_stack[i]);
+			break;
+		}
+		
+		if (i == TOTAL_MAXIMUM_STACK - 1)
+		{
+			/* Could not find alignment, disable MPU */
+		}
+	}
+	
 	_task_count = 0;
 	_thread_init_offset = 0;
 	pOS_tick = 0;

@@ -14,7 +14,7 @@
 /* Scheduler stuff */
 #define MAX_STACK_PER_THREAD 1024
 #define NUM_OF_THREADS 8
-#define TOTAL_MAXIMUM_STACK NUM_OF_THREADS * MAX_STACK_PER_THREAD
+#define TOTAL_MAXIMUM_STACK (NUM_OF_THREADS + 1) * MAX_STACK_PER_THREAD /* Extra thread stack is being used for other things */
 #define NUM_OF_TASKS 64
 
 /* Memory manager */
