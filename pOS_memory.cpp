@@ -12,15 +12,15 @@ pOS_memory_block::~pOS_memory_block()
 	
 }
 
-uint8_t pOS_memory::_pool[MEMORY_POOL];
+volatile uint8_t pOS_memory::_pool[MEMORY_POOL];
 
-pOS_memory_block pOS_memory::_pool_meta[MEMORY_META_POOL];
+volatile pOS_memory_block pOS_memory::_pool_meta[MEMORY_META_POOL];
 
 bool pOS_memory::initialize()
 {
 	for (uint32_t i = 0; i < MEMORY_POOL; i++)
 	{
-		_pool[i] = i;
+		_pool[i] = 0;
 	}
 	
 	for (uint32_t i = 0; i < MEMORY_META_POOL; i++)
@@ -35,7 +35,7 @@ bool pOS_memory::initialize()
 
 bool pOS_memory::is_memory_chunk_taken(uint32_t offset, uint32_t ignore_id)
 {
-	void* ptr = &_pool[offset];
+	void* ptr = (void*)&_pool[offset];
 	void* start = 0;
 	for (uint32_t i = 0; i < MEMORY_META_POOL; i++)
 	{
@@ -61,7 +61,7 @@ void* pOS_memory::allocate(uint32_t id, uint32_t size)
 	{
 		if (_pool_meta[i].id == 0)
 		{
-			mem = &_pool_meta[i];
+			mem = (pOS_memory_block*)&_pool_meta[i];
 		}
 	}
 	

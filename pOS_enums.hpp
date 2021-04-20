@@ -61,4 +61,10 @@ enum class pOS_task_quanta
 	small = 1,
 };
 
+enum class pOS_multicore_commands
+{
+	print_char,
+	print_str,
+};
+
 #endif

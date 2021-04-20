@@ -16,8 +16,10 @@ private:
 public:
 	static void initialize(uart_inst_t * uart, uint32_t tx_pin, uint32_t rx_pin);
 	static void clear_terminal();
-	static void print_string(uint8_t* str);
+	static void print_string(uint8_t* str, ...);
 	static void print_char(uint8_t chr);
+	static void print_double(double num);
+	static void print_int(int32_t num);
 	static void reset_buffer();
 	static void append_buffer(uint8_t chr);
 	static uint8_t* get_buffer();

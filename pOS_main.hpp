@@ -4,7 +4,12 @@
 #include "pico/stdlib.h"
 
 /* Registers */
-#define AIRCR_Register (*((volatile uint32_t*)(PPB_BASE + 0x0ED0C)))
+#define AIRCR_Register (*((volatile uint32_t*)(0xE0000000 + 0xED0C)))
+#define MPU_TYPE_Register (*((volatile uint32_t*)(0xE0000000 + 0xED90)))
+#define MPU_CTRL_Register (*((volatile uint32_t*)(0xE0000000 + 0xED94)))
+#define MPU_RNR_Register (*((volatile uint32_t*)(0xE0000000 + 0xED98)))
+#define MPU_RBAR_Register (*((volatile uint32_t*)(0xE0000000 + 0xED9C)))
+#define MPU_RASR_Register (*((volatile uint32_t*)(0xE0000000 + 0xEDA0)))
 
 /* Scheduler stuff */
 #define MAX_STACK_PER_THREAD 1024

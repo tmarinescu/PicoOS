@@ -1,0 +1,13 @@
+#ifndef _POS_UTILITIES_H_
+#define _POS_UTILITIES_H_
+
+#include "pOS_main.hpp"
+
+class pOS_utilities
+{
+public:
+	static uint32_t extract_bits(uint32_t value, uint32_t start_bit, uint32_t end_bit);
+	static uint32_t set_bits(uint32_t value, uint32_t start_bit, uint32_t end_bit, uint32_t new_value);
+};
+
+#endif

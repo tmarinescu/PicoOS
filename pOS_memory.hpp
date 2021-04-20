@@ -8,7 +8,7 @@ class pOS_memory_block
 public:
 	uint32_t id;			/* 0 = unused */
 	uint32_t size;
-	volatile void* location;
+	volatile void* volatile location;
 	pOS_memory_block();
 	~pOS_memory_block();
 };
@@ -16,8 +16,8 @@ public:
 class pOS_memory
 {
 private:
-	static uint8_t _pool[MEMORY_POOL];
-	static pOS_memory_block _pool_meta[MEMORY_META_POOL];
+	static volatile uint8_t _pool[MEMORY_POOL];
+	static volatile pOS_memory_block _pool_meta[MEMORY_META_POOL];
 public:
 	static bool initialize();
 	static void* allocate(uint32_t id, uint32_t size);

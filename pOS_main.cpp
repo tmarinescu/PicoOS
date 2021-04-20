@@ -5,6 +5,9 @@
 #include "pOS_critical_section.hpp"
 #include "pOS_mutex.hpp"
 #include "pOS_communication.hpp"
+#include "pOS_multicore.hpp"
+#include "pOS_utilities.hpp"
+#include "pOS_memory_protection.hpp"
 
 #include <ctype.h>
 
@@ -170,9 +173,8 @@ int32_t wait_for_other_board()
 {
 	uint32_t* mcu_status = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
 	
-	g_uart_mutex.lock();
 	pOS_communication_terminal::print_string((uint8_t*)"Searching for MCU handshake...");
-	bool value = pOS_communication_mcu::initialize(uart1, 16, 17);
+	bool value = pOS_communication_mcu::initialize(uart0, 16, 17);
 	if (!value)
 	{
 		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake timed out!\n");
@@ -183,13 +185,14 @@ int32_t wait_for_other_board()
 		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake successful!\n");
 		*mcu_status = 1;
 	}
-	g_uart_mutex.unlock();
 	return 0;
 }
 
+uint8_t test_data[256];
 
 int main() 
 {
+	core1_init();
 	/* Disable all interrupts*/
 	pOS_critical::disable_all_interrupts();
 	
@@ -199,9 +202,24 @@ int main()
 	pOS_gpio::initialize_all();
 	pOS_gpio::get(25)->set_function(pOS_gpio_function::pwm);
 	
-	pOS_communication_terminal::initialize(uart0, 0, 1);
+	pOS_communication_terminal::initialize(uart1, 4, 5);
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
+	
+	uint32_t mpu = MPU_TYPE_Register;
+	pOS_communication_terminal::print_string((uint8_t*)"MPU [i]Regions: %d\n", pOS_utilities::extract_bits(mpu, 16, 23));
+	pOS_communication_terminal::print_string((uint8_t*)"MPU [d]Regions: %d\n", pOS_utilities::extract_bits(mpu, 8, 15));
+	pOS_communication_terminal::print_string((uint8_t*)"MPU Separate: %d\n", pOS_utilities::extract_bits(mpu, 0, 0));
+	
+	test_data[0] = 1;
+	pOS_communication_terminal::print_string((uint8_t*)"Addr: %d\n", (uint32_t)&test_data[0]);
+	pOS_memory_protection::initialize();
+	pOS_memory_protection::lock_area(0, &test_data[0], 7);
+	//test_data[0] = 2;
+	
+	uint32_t x = 0;
+	x = pOS_utilities::set_bits(x, 0, 0, 1);
+	pOS_communication_terminal::print_string((uint8_t*)"Test: %d\n", x);
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -218,7 +236,7 @@ int main()
 
 	/* Initialize thread stacks */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_512);
+		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_1024);
 
 	/* Enable all threads */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)

@@ -3,9 +3,12 @@
 #include "pOS_scheduler.hpp"
 #include "pOS_memory.hpp"
 #include "pOS_critical_section.hpp"
+#include "pOS_multicore.hpp"
 
 #include "hardware/uart.h"
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 uint32_t pOS_communication_terminal::_index = 0;
 uint8_t pOS_communication_terminal::_buffer[TERMINAL_BUFFER_SIZE];
@@ -15,12 +18,10 @@ void pOS_communication_terminal::initialize(uart_inst_t* uart, uint32_t tx_pin, 
 {
 	_assigned_uart = uart;
 	uart_init(uart, 115200);
-	uart_set_fifo_enabled(uart, false);
+	uart_set_fifo_enabled(uart, true);
 
 	pOS_gpio::get(tx_pin)->set_function(pOS_gpio_function::uart);
 	pOS_gpio::get(rx_pin)->set_function(pOS_gpio_function::uart);
-	
-	uint8_t garbage = uart_getc((uart_inst_t *)_assigned_uart);
 }
 
 void pOS_communication_terminal::clear_terminal()
@@ -28,18 +29,60 @@ void pOS_communication_terminal::clear_terminal()
 	if (_assigned_uart == 0)
 		return;
 	
-	uart_putc((uart_inst_t*)_assigned_uart, 27) ;
-	uart_puts((uart_inst_t*)_assigned_uart, "[2J");
-	uart_putc((uart_inst_t*)_assigned_uart, 27);
-	uart_puts((uart_inst_t*)_assigned_uart, "[H");
+	core_print_chr_offset((uart_inst_t*)_assigned_uart, 27);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)"[2J");
+	core_print_chr_offset((uart_inst_t*)_assigned_uart, 27);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)"[H");
+	
 }
 	
-void pOS_communication_terminal::print_string(uint8_t* str)
+void pOS_communication_terminal::print_string(uint8_t* str, ...)
 {
 	if (_assigned_uart == 0)
 		return;
 	
-	uart_puts((uart_inst_t*)_assigned_uart, (char *)str);
+	va_list ap;
+	va_start(ap, str);
+	
+	int32_t ival;
+	double dval;
+	uint8_t* sval;
+	uint8_t cval;
+	
+	uint8_t* p;
+	for (p = str; *p; p++)
+	{
+		if (*p != '%')
+		{
+			core_print_chr_offset((uart_inst_t*)_assigned_uart, *p);
+			continue;
+		}
+		
+		switch (* ++p)
+		{
+		case 'd':
+			ival = va_arg(ap, int);
+			print_int(ival);
+			break;
+		case 'f':
+			dval = va_arg(ap, double);
+			print_double(dval);
+			break;
+		case 's':
+			for (sval = va_arg(ap, uint8_t*); *sval; sval++)
+				print_char(*sval);
+			break;
+		case 'c':
+			cval = (uint8_t)va_arg(ap, int);
+			print_char(cval);
+			break;
+		default:
+			putchar(*p);
+			break;
+		}
+	}
+	
+	va_end(ap);
 }
 
 void pOS_communication_terminal::print_char(uint8_t chr)
@@ -47,7 +90,20 @@ void pOS_communication_terminal::print_char(uint8_t chr)
 	if (_assigned_uart == 0)
 		return;
 	
-	uart_putc((uart_inst_t*)_assigned_uart, chr);
+	core_print_chr_offset((uart_inst_t*)_assigned_uart, chr);
+}
+
+uint8_t num_buff[100];
+void pOS_communication_terminal::print_double(double num)
+{
+	sprintf((char *)num_buff, "%f", num);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
+}
+	
+void pOS_communication_terminal::print_int(int32_t num)
+{
+	sprintf((char *)num_buff, "%lu", num);
+	core_print_str_offset((uart_inst_t*)_assigned_uart, (uint8_t*)num_buff);
 }
 	
 void pOS_communication_terminal::reset_buffer()
@@ -75,11 +131,6 @@ uint8_t pOS_communication_terminal::wait_for_input()
 	while (_assigned_uart == 0)
 	{
 		/* Lock up until uart gets initialized */
-	}
-	
-	while (!uart_is_readable((uart_inst_t*)_assigned_uart))
-	{
-		/* Lock up until uart is readable */
 	}
 	
 	uint8_t chr = uart_getc((uart_inst_t*)_assigned_uart);
