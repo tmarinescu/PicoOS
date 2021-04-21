@@ -43,7 +43,7 @@ enum class pOS_thread_speed
 	slow
 };
 
-enum class pOS_thread_size
+enum class pOS_stack_size
 {
 	byte_256 = 256,
 	byte_512 = 512,

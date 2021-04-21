@@ -3,6 +3,7 @@
 #include "hardware/sync.h"
 #include "pOS_critical_section.hpp"
 #include "pOS_communication.hpp"
+#include "pOS_memory_protection.hpp"
 
 extern "C"
 {
@@ -41,6 +42,8 @@ volatile uint32_t pOS_scheduler::_task_index;
 	
 pOS_thread* pOS_scheduler::_active_thread;
 
+bool pOS_scheduler::_mpu_enabled;
+bool pOS_scheduler::_mpu_broken;
 
 bool pOS_scheduler::resume()
 {
@@ -76,6 +79,10 @@ void pOS_scheduler::update()
 	{
 		_first_run = true;
 	}
+	
+	pOS_memory_protection::disable_mpu();
+	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
+		pOS_memory_protection::unlock_area(i, (_threads[i].stack_start) - _threads[i].stack_size, 9);
 	
 	/* Try to find our first thread. */
 	uint32_t _mem_thread = _current_thread;
@@ -229,6 +236,12 @@ void pOS_scheduler::update()
 	pOS_stack_lower_limit = (uint32_t)_threads[_current_thread].stack_start;
 	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - _threads[_current_thread].stack_size);
 	
+	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
+		if (i != _current_thread)
+			pOS_memory_protection::lock_area(i, (_threads[i].stack_start) - _threads[i].stack_size, 9);
+	
+	pOS_memory_protection::enable_mpu();
+
 	return;
 }
 
@@ -238,6 +251,8 @@ bool pOS_scheduler::initialize()
 	pOS_quanta = 0;
 	_running = false;
 	_stack_offset = 0;
+	_mpu_enabled = false;
+	_mpu_broken = false;
 	
 	pOS_communication_terminal::print_string((uint8_t*)"Stack offset start (ADDR: 0x%08x)\n", (uint32_t)&_stack[0]);
 	pOS_communication_terminal::print_string((uint8_t*)"Finding alignment...\n", (uint32_t)&_stack[0]);
@@ -253,6 +268,7 @@ bool pOS_scheduler::initialize()
 		if (i == TOTAL_MAXIMUM_STACK - 1)
 		{
 			/* Could not find alignment, disable MPU */
+			_mpu_broken = true;
 		}
 	}
 	
@@ -276,7 +292,7 @@ bool pOS_scheduler::initialize()
 		_threads[i].error = 0;
 		_threads[i].error_code = pOS_thread_error::none;
 		_threads[i].initialized = false;
-		_threads[i].size = pOS_thread_size::byte_256;
+		_threads[i].size = pOS_stack_size::byte_256;
 		_threads[i].speed = pOS_thread_speed::normal;
 		_threads[i].stack = 0;
 		_threads[i].stack_total_checksum = 0;
@@ -418,7 +434,7 @@ pOS_thread* pOS_scheduler::get_thread(int32_t thread_id)
 	return &_threads[thread_id];
 }
 
-bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_thread_size size)
+bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 {
 	if (_thread_init_offset >= NUM_OF_THREADS)
 		return false;
@@ -629,11 +645,12 @@ uint32_t pOS_scheduler::get_thread_address(uint32_t index)
 
 void pOS_scheduler::sleep(uint32_t ms)
 {
-	uint32_t tick = pOS_tick;
-	while (pOS_tick - tick < ms)
+	/* A fix might be required for the wrap-around edge case of this timer */
+	uint32_t start = timer_hw->timerawl;
+	do /* Do at least once so sleep(0) can yield */
 	{
 		yield();
-	}
+	} while (timer_hw->timerawl - start < ms * 1000); /* Milli to micro */
 	
 	return;
 }

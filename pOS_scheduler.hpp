@@ -31,6 +31,9 @@ private:
 	
 	static pOS_thread* _active_thread;
 	
+	static bool _mpu_enabled;
+	static bool _mpu_broken;
+	
 public:
 	static bool resume();
 	static bool pause();
@@ -49,7 +52,7 @@ public:
 	static bool reset_thread(int32_t thread_id);
 	static bool is_thread_enabled(int32_t thread_id);
 	static pOS_thread* get_thread(int32_t thread_id);
-	static bool initialize_thread(int32_t thread_id, pOS_thread_size size);
+	static bool initialize_thread(int32_t thread_id, pOS_stack_size size);
 	static bool is_thread_initialized(int32_t thread_id);
 	static bool set_thread_speed(int32_t thread_id, pOS_thread_speed speed);
 	

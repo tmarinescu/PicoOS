@@ -209,23 +209,6 @@ int main()
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
 	
-	/*------------------- MPU TESTING -------------------*/
-	uint32_t mpu = MPU_TYPE_Register;
-	pOS_communication_terminal::print_string((uint8_t*)"MPU [i]Regions: %d\n", pOS_utilities::extract_bits(mpu, 16, 23));
-	pOS_communication_terminal::print_string((uint8_t*)"MPU [d]Regions: %d\n", pOS_utilities::extract_bits(mpu, 8, 15));
-	pOS_communication_terminal::print_string((uint8_t*)"MPU Separate: %d\n", pOS_utilities::extract_bits(mpu, 0, 0));
-	
-	test_data[0] = 1;
-	pOS_communication_terminal::print_string((uint8_t*)"Addr: %08x\n", (uint32_t)&test_data[0]);
-	//pOS_memory_protection::initialize();
-	//pOS_memory_protection::lock_area(0, &test_data[0], 7);
-	//test_data[0] = 2;
-	
-	uint32_t x = 0;
-	x = pOS_utilities::set_bits(x, 0, 0, 1);
-	pOS_communication_terminal::print_string((uint8_t*)"Test: %d\n", x);
-	/*---------------------------------------------------*/
-	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
 
@@ -241,7 +224,7 @@ int main()
 
 	/* Initialize thread stacks */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-		pOS_scheduler::initialize_thread(i, pOS_thread_size::byte_1024);
+		pOS_scheduler::initialize_thread(i, pOS_stack_size::byte_1024);
 
 	/* Enable all threads */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)

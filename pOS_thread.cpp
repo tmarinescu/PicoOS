@@ -14,7 +14,7 @@ pOS_thread::pOS_thread()
 	stack_free_checksum = 0;
 	error_code = pOS_thread_error::none;
 	speed = pOS_thread_speed::normal;
-	size = pOS_thread_size::byte_256;
+	size = pOS_stack_size::byte_256;
 	
 	enabled = false;
 	initialized = false;

@@ -137,6 +137,13 @@ isr_systick:	@R0-R3, R12, LR, PC, xPSR already pushed by interrupt
 	MOV R11, R7
 	POP {R4-R7}						@Pop low registers
 
+	LDR R0, =0xE000ED04
+	LDR R1, =0x2000000
+	STR R1, [R0]
+	LDR R0, =0xE000E014				@SYST_RVR register
+	LDR R1, =0x1E847				@Setup SysTick reload value (System clock - 1)
+	STR R1, [R0]
+
 	CPSIE IF
 	BX LR							@Exit back out of interrupt
 
@@ -150,6 +157,14 @@ internal_skip:
 	LDR R1, [R0]
 	SUBS R1, R1, #1					@Decrease task quanta
 	STR R1, [R0]
+
+	LDR R0, =0xE000ED04
+	LDR R1, =0x2000000				@Clear pending SysTick
+	STR R1, [R0]
+	LDR R0, =0xE000E014				@SYST_RVR register
+	LDR R1, =0x1E847				@Setup SysTick reload value (System clock - 1)
+	STR R1, [R0]
+
 	CPSIE IF
 	BX LR
 

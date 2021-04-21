@@ -22,7 +22,7 @@ public:
 	
 	pOS_thread_error error_code;
 	pOS_thread_speed speed;
-	pOS_thread_size size;
+	pOS_stack_size size;
 	
 	volatile bool enabled;
 	volatile bool initialized;
