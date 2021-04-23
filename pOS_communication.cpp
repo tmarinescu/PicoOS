@@ -22,6 +22,9 @@ void pOS_communication_terminal::initialize(uart_inst_t* uart, uint32_t tx_pin, 
 
 	pOS_gpio::get(tx_pin)->set_function(pOS_gpio_function::uart);
 	pOS_gpio::get(rx_pin)->set_function(pOS_gpio_function::uart);
+	
+	/* Discard garbage on line */
+	uart_getc((uart_inst_t*)_assigned_uart);
 }
 
 void pOS_communication_terminal::clear_terminal()
@@ -203,6 +206,12 @@ void pOS_communication_terminal::interpret_command()
 		uint8_t* led_run = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_LED_RUNNING);
 		pOS_communication_terminal::print_string((uint8_t*)"\nLED started\n");
 		*led_run = 1;
+	}
+	else if (strcmp((char*)_buffer, "corrupt stack") == 0)
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"\nCorrupting...\n");
+		pOS_scheduler::corrupt_stack();
+		pOS_communication_terminal::print_string((uint8_t*)"\nCorrupted\n");
 	}
 	else
 	{

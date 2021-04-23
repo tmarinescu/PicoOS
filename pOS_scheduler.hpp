@@ -40,6 +40,7 @@ public:
 	static void update();
 	static bool initialize();
 	static void jump_start();
+	static void corrupt_stack();
 	
 	static uint32_t get_tick();
 	static void set_tick(uint32_t tick);
@@ -52,6 +53,7 @@ public:
 	static bool reset_thread(int32_t thread_id);
 	static bool is_thread_enabled(int32_t thread_id);
 	static pOS_thread* get_thread(int32_t thread_id);
+	static pOS_thread* get_active_thread();
 	static bool initialize_thread(int32_t thread_id, pOS_stack_size size);
 	static bool is_thread_initialized(int32_t thread_id);
 	static bool set_thread_speed(int32_t thread_id, pOS_thread_speed speed);

@@ -81,8 +81,6 @@ void pOS_scheduler::update()
 	}
 	
 	pOS_memory_protection::disable_mpu();
-	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-		pOS_memory_protection::unlock_area(i, (_threads[i].stack_start) - _threads[i].stack_size, 9);
 	
 	/* Try to find our first thread. */
 	uint32_t _mem_thread = _current_thread;
@@ -237,11 +235,14 @@ void pOS_scheduler::update()
 	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - _threads[_current_thread].stack_size);
 	
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
+	{
 		if (i != _current_thread)
-			pOS_memory_protection::lock_area(i, (_threads[i].stack_start) - _threads[i].stack_size, 9);
+			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
+		else
+			pOS_memory_protection::unlock_area(i, _threads[i].stack_top, 9);
+	}
 	
 	pOS_memory_protection::enable_mpu();
-
 	return;
 }
 
@@ -328,7 +329,20 @@ bool pOS_scheduler::initialize()
 
 void pOS_scheduler::jump_start()
 {
+	for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
+	{
+		if (_active_thread == &_threads[i])
+			pOS_memory_protection::unlock_area(i, _threads[i].stack_top, 9);
+		else
+			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
+	}
+		
 	pOS_kernel_start();
+}
+
+void pOS_scheduler::corrupt_stack()
+{
+	_stack[11 + 16 + 1] = 0;
 }
 
 	
@@ -434,6 +448,11 @@ pOS_thread* pOS_scheduler::get_thread(int32_t thread_id)
 	return &_threads[thread_id];
 }
 
+pOS_thread* pOS_scheduler::get_active_thread()
+{
+	return _active_thread;
+}
+
 bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 {
 	if (_thread_init_offset >= NUM_OF_THREADS)
@@ -461,6 +480,7 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id;  //R0 (argument passed to threads to identify itself by ID)
 	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16];  //start of the stack pointer
 	_thread->stack_start = (uint32_t*)&_stack[_stack_offset + (uint32_t)size];
+	_thread->stack_top = (uint32_t*)&_stack[_stack_offset];
 	
 	for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)
 	{

@@ -42,13 +42,14 @@ void pOS_memory_protection::lock_area(uint8_t region, void* start, uint32_t size
 	
 	value = MPU_RASR_Register;
 	value = pOS_utilities::set_bits(value, 0, 0, 1);
-	value = pOS_utilities::set_bits(value, 1, 5, size);
-	value = pOS_utilities::set_bits(value, 8, 15, 0x00);
-	value = pOS_utilities::set_bits(value, 28, 28, 1);
-	value = pOS_utilities::set_bits(value, 24, 26, 6); //AP
-	value = pOS_utilities::set_bits(value, 16, 16, 0);
-	value = pOS_utilities::set_bits(value, 17, 17, 0);
-	value = pOS_utilities::set_bits(value, 18, 18, 0);
+	value = pOS_utilities::set_bits(value, 1, 5, size); 
+	value = pOS_utilities::set_bits(value, 8, 15, 0x00); //Subregion disable (0x00 = enable)
+	value = pOS_utilities::set_bits(value, 28, 28, 1); //XN
+	value = pOS_utilities::set_bits(value, 19, 21, 1); //TEX
+	value = pOS_utilities::set_bits(value, 24, 26, 0); //Access (0 = no access)
+	value = pOS_utilities::set_bits(value, 16, 16, 0); //Bufferable
+	value = pOS_utilities::set_bits(value, 17, 17, 0); //Cacheable
+	value = pOS_utilities::set_bits(value, 18, 18, 0); //Shareable
 	MPU_RASR_Register = value;
 }
 	
@@ -67,11 +68,12 @@ void pOS_memory_protection::unlock_area(uint8_t region, void* start, uint32_t si
 	value = MPU_RASR_Register;
 	value = pOS_utilities::set_bits(value, 0, 0, 0);
 	value = pOS_utilities::set_bits(value, 1, 5, size);
-	value = pOS_utilities::set_bits(value, 8, 15, 0xFF);
-	value = pOS_utilities::set_bits(value, 28, 28, 1);
-	value = pOS_utilities::set_bits(value, 24, 26, 3);  //AP
-	value = pOS_utilities::set_bits(value, 16, 16, 0);
-	value = pOS_utilities::set_bits(value, 17, 17, 0);
-	value = pOS_utilities::set_bits(value, 18, 18, 0);
+	value = pOS_utilities::set_bits(value, 8, 15, 0x00);  //Subregion disable (0x00 = enable)
+	value = pOS_utilities::set_bits(value, 28, 28, 1);  //XN
+	value = pOS_utilities::set_bits(value, 19, 21, 1);  //TEX
+	value = pOS_utilities::set_bits(value, 24, 26, 3);  //Access (3 = full access)
+	value = pOS_utilities::set_bits(value, 16, 16, 0);  //Bufferable
+	value = pOS_utilities::set_bits(value, 17, 17, 0);  //Cacheable
+	value = pOS_utilities::set_bits(value, 18, 18, 0);  //Shareable
 	MPU_RASR_Register = value;
 }

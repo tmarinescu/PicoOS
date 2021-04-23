@@ -190,14 +190,20 @@ int32_t wait_for_other_board()
 }
 #endif
 
-uint8_t test_data[256];
+uint8_t test_data[1024 * 9];
 
 int main() 
 {
-	core1_init();
 	/* Disable all interrupts*/
 	pOS_critical::disable_all_interrupts();
 	
+	/* Init core 1 */
+	core1_init();
+	
+	/* Disable MPU */
+	pOS_memory_protection::disable_mpu();
+	
+	/* Initialize memory manager */
 	pOS_memory::initialize();
 	
 	/* Initialize GPIO system and LED */
@@ -224,12 +230,14 @@ int main()
 
 	/* Initialize thread stacks */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
+	{
 		pOS_scheduler::initialize_thread(i, pOS_stack_size::byte_1024);
+	}
 
 	/* Enable all threads */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 		pOS_scheduler::enable_thread(i);
-
+	
 	/* Add some random tasks */
 	uint32_t id = 0;
 	pOS_scheduler::create_task(&global_memory_init_task, /* Main function */
@@ -280,6 +288,9 @@ int main()
 	pOS_scheduler::enable_task(id);
 #endif
 
+	/* Enable MPU */
+	pOS_memory_protection::enable_mpu();
+	
 	/* Start the kernel */
 	pOS_scheduler::jump_start();
 	while (1) ;
