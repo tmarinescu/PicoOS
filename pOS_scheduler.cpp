@@ -80,8 +80,6 @@ void pOS_scheduler::update()
 		_first_run = true;
 	}
 	
-	pOS_memory_protection::disable_mpu();
-	
 	/* Try to find our first thread. */
 	uint32_t _mem_thread = _current_thread;
 	while (!_threads[_current_thread].enabled) /* Can cause infinite loop if all threads are disabled, needs a better design */
@@ -102,7 +100,7 @@ void pOS_scheduler::update()
 	{
 		for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)
 		{
-			if ((_active_thread->stack_start - _active_thread->stack_size)[i] != STACK_GUARD)
+			if ((_active_thread->stack_start - _active_thread->stack_size + 1)[i] != STACK_GUARD)
 			{
 				_active_thread = 0;
 			}
@@ -131,7 +129,8 @@ void pOS_scheduler::update()
 	
 	/* Found a thread */
 	_active_thread = &_threads[_current_thread];
-	
+	pOS_memory_protection::unlock_area(_active_thread->id, _active_thread->stack_top, 9);
+
 	if (_active_thread->attached_task != 0)
 	{
 		pOS_kernel_debug_values[5] = ((pOS_task*)_active_thread->attached_task)->id;
@@ -235,14 +234,9 @@ void pOS_scheduler::update()
 	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - _threads[_current_thread].stack_size);
 	
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-	{
 		if (i != _current_thread)
 			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
-		else
-			pOS_memory_protection::unlock_area(i, _threads[i].stack_top, 9);
-	}
 	
-	pOS_memory_protection::enable_mpu();
 	return;
 }
 
@@ -329,6 +323,9 @@ bool pOS_scheduler::initialize()
 
 void pOS_scheduler::jump_start()
 {
+	/* Enable MPU */
+	pOS_memory_protection::enable_mpu();
+	
 	for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
 	{
 		if (_active_thread == &_threads[i])
@@ -337,6 +334,7 @@ void pOS_scheduler::jump_start()
 			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
 	}
 		
+	/* Start kernel */
 	pOS_kernel_start();
 }
 
@@ -361,7 +359,7 @@ uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_
 	uint32_t x = 0;
 	for (uint32_t i = 0; i < size; i++)
 	{
-		x ^= stack_loc[(-offset) - i];
+		x ^= stack_loc[(-offset) - i - 1];
 	}
 	return x;
 }
@@ -475,11 +473,11 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 	_thread->stack_used_checksum = 0;
 	_thread->stack_free_checksum = 0;
 	_thread->used_stack = 0;
-	_stack[_stack_offset + (uint32_t)size - 1] = 0x01000000;  //xPSR
-	_stack[_stack_offset + (uint32_t)size - 2] = _thread_addresses[_thread->id];  //PC
-	_stack[_stack_offset + (uint32_t)size - 8] = _thread->id;  //R0 (argument passed to threads to identify itself by ID)
-	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 16];  //start of the stack pointer
-	_thread->stack_start = (uint32_t*)&_stack[_stack_offset + (uint32_t)size];
+	_stack[_stack_offset + (uint32_t)size - 2] = 0x01000000;  //xPSR
+	_stack[_stack_offset + (uint32_t)size - 3] = _thread_addresses[_thread->id];  //PC
+	_stack[_stack_offset + (uint32_t)size - 9] = _thread->id;  //R0 (argument passed to threads to identify itself by ID)
+	_thread->stack = &_stack[_stack_offset + (uint32_t)size - 17];  //start of the stack pointer
+	_thread->stack_start = (uint32_t*)&_stack[_stack_offset + (uint32_t)size - 1];
 	_thread->stack_top = (uint32_t*)&_stack[_stack_offset];
 	
 	for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)

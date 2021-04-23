@@ -190,8 +190,6 @@ int32_t wait_for_other_board()
 }
 #endif
 
-uint8_t test_data[1024 * 9];
-
 int main() 
 {
 	/* Disable all interrupts*/
@@ -201,7 +199,7 @@ int main()
 	core1_init();
 	
 	/* Disable MPU */
-	pOS_memory_protection::disable_mpu();
+	pOS_memory_protection::initialize();
 	
 	/* Initialize memory manager */
 	pOS_memory::initialize();
@@ -287,9 +285,6 @@ int main()
 		&id);
 	pOS_scheduler::enable_task(id);
 #endif
-
-	/* Enable MPU */
-	pOS_memory_protection::enable_mpu();
 	
 	/* Start the kernel */
 	pOS_scheduler::jump_start();
