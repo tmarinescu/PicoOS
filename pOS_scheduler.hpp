@@ -31,9 +31,6 @@ private:
 	
 	static pOS_thread* _active_thread;
 	
-	static bool _mpu_enabled;
-	static bool _mpu_broken;
-	
 public:
 	static bool resume();
 	static bool pause();

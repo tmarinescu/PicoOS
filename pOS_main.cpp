@@ -198,7 +198,7 @@ int main()
 	/* Init core 1 */
 	core1_init();
 	
-	/* Disable MPU */
+	/* Initialize MPU */
 	pOS_memory_protection::initialize();
 	
 	/* Initialize memory manager */

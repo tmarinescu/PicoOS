@@ -42,9 +42,6 @@ volatile uint32_t pOS_scheduler::_task_index;
 	
 pOS_thread* pOS_scheduler::_active_thread;
 
-bool pOS_scheduler::_mpu_enabled;
-bool pOS_scheduler::_mpu_broken;
-
 bool pOS_scheduler::resume()
 {
 	if (_running)
@@ -129,7 +126,7 @@ void pOS_scheduler::update()
 	
 	/* Found a thread */
 	_active_thread = &_threads[_current_thread];
-	pOS_memory_protection::unlock_area(_active_thread->id, _active_thread->stack_top, 9);
+	pOS_memory_protection::unlock_region(_active_thread->id);
 
 	if (_active_thread->attached_task != 0)
 	{
@@ -235,7 +232,7 @@ void pOS_scheduler::update()
 	
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 		if (i != _current_thread)
-			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
+			pOS_memory_protection::lock_region(i);
 	
 	return;
 }
@@ -246,24 +243,23 @@ bool pOS_scheduler::initialize()
 	pOS_quanta = 0;
 	_running = false;
 	_stack_offset = 0;
-	_mpu_enabled = false;
-	_mpu_broken = false;
 	
-	pOS_communication_terminal::print_string((uint8_t*)"Stack offset start (ADDR: 0x%08x)\n", (uint32_t)&_stack[0]);
-	pOS_communication_terminal::print_string((uint8_t*)"Finding alignment...\n", (uint32_t)&_stack[0]);
+	pOS_communication_terminal::print_string((uint8_t*)"Aligning stack...\n");
 	for (uint32_t i = 0; i < TOTAL_MAXIMUM_STACK; i++)
 	{
 		if (((((uint32_t)&_stack[i]) & 0x000000FF) == 0)) /* Search for nearest address with 0 as the lower 8 bits (MPU base address ignores last byte) eg. (0x123456XX, 0x777788XX) */
 		{
 			_stack_offset = i;
-			pOS_communication_terminal::print_string((uint8_t*)"Stack offset found at [%d] (ADDR: 0x%08x)\n", i, (uint32_t)&_stack[i]);
+			pOS_communication_terminal::print_string((uint8_t*)"Stack aligned from [0x%08x] to [0x%08x]\n", (uint32_t)&_stack[0], (uint32_t)&_stack[i]);
+			pOS_memory_protection::set_mpu_available();
 			break;
 		}
 		
 		if (i == TOTAL_MAXIMUM_STACK - 1)
 		{
 			/* Could not find alignment, disable MPU */
-			_mpu_broken = true;
+			pOS_communication_terminal::print_string((uint8_t*)"Could not align stack therefore MPU has been disabled.\n");
+			pOS_memory_protection::set_mpu_unavailable();
 		}
 	}
 	
@@ -323,15 +319,33 @@ bool pOS_scheduler::initialize()
 
 void pOS_scheduler::jump_start()
 {
-	/* Enable MPU */
-	pOS_memory_protection::enable_mpu();
-	
-	for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
+	if (pOS_memory_protection::is_mpu_available())
 	{
-		if (_active_thread == &_threads[i])
-			pOS_memory_protection::unlock_area(i, _threads[i].stack_top, 9);
-		else
-			pOS_memory_protection::lock_area(i, _threads[i].stack_top, 9);
+		pOS_communication_terminal::print_string((uint8_t*)"MPU is available. Initializing...\n");
+		
+		/* Enable MPU */
+		pOS_memory_protection::enable_mpu();
+	
+		for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access\n", i);
+			pOS_memory_protection::init_region(i, _threads[i].stack_top, pOS_mpu_size::byte_1024);
+		
+			if (_active_thread == &_threads[i])
+			{
+				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d unlocked\n", i);
+				pOS_memory_protection::unlock_region(i);
+			}
+			else
+			{
+				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d locked\n", i);
+				pOS_memory_protection::lock_region(i);
+			}
+		}
+	}
+	else
+	{
+		pOS_communication_terminal::print_string((uint8_t*)"WARNING: MPU is unavailable. Kernel security is at risk.\n");
 	}
 		
 	/* Start kernel */

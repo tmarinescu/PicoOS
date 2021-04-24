@@ -52,6 +52,14 @@ enum class pOS_stack_size
 	byte_4096 = 4096
 };
 
+enum class pOS_mpu_size
+{
+	byte_256 = 7,
+	byte_512 = 8,
+	byte_1024 = 9,
+	byte_2048 = 10
+};
+
 enum class pOS_task_quanta
 {
 	heavy = 50,
