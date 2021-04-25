@@ -1,5 +1,6 @@
 #include "pOS_semaphore.hpp"
 #include "pOS_critical_section.hpp"
+#include "pOS_scheduler.hpp"
 
 void pOS_semaphore::initialize_semaphore(int32_t* semaphore, int32_t value)
 {
@@ -28,10 +29,9 @@ void pOS_semaphore::wait_semaphore(int32_t* semaphore)
 	
 	while (*semaphore <= 0)
 	{
-		
+		pOS_scheduler::yield();
 	}
 	
 	*semaphore -= 1;
 	pOS_critical::enable_and_restore_interrupts(state);
 }
-	

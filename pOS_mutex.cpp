@@ -1,6 +1,7 @@
 #include "pOS_mutex.hpp"
 #include  "pOS_critical_section.hpp"
 #include "hardware/sync.h"
+#include "pOS_scheduler.hpp"
 
 /* LDREX and STREX are not supported on Cortex-M0, so this is the best we can do in terms of atomic mutex */
 
@@ -24,6 +25,7 @@ void pOS_mutex::lock() volatile
 			return;
 		}
 		pOS_critical::enable_and_restore_interrupts(mem);
+		pOS_scheduler::yield();
 	}
 }
 	
