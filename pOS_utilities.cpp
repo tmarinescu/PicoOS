@@ -32,3 +32,31 @@ void pOS_utilities::debug_print(uint8_t* str, ...)
 		va_end(args);
 	}
 }
+
+pOS_mpu_size pOS_utilities::convert_stack_to_mpu_size(pOS_stack_size size)
+{
+	if (size == pOS_stack_size::byte_256)
+		return pOS_mpu_size::byte_256;
+	else if (size == pOS_stack_size::byte_512)
+		return pOS_mpu_size::byte_512;
+	else if (size == pOS_stack_size::byte_1024)
+		return pOS_mpu_size::byte_1024;
+	else if (size == pOS_stack_size::byte_2048)
+		return pOS_mpu_size::byte_2048;
+	else
+		return pOS_mpu_size::byte_2048;
+}
+
+pOS_mpu_size pOS_utilities::convert_stack_to_mpu_size(uint32_t size)
+{
+	if (size == 256)
+		return pOS_mpu_size::byte_256;
+	else if (size == 512)
+		return pOS_mpu_size::byte_512;
+	else if (size == 1024)
+		return pOS_mpu_size::byte_1024;
+	else if (size == 2048)
+		return pOS_mpu_size::byte_2048;
+	else
+		return pOS_mpu_size::byte_2048;
+}

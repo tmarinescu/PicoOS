@@ -7,7 +7,6 @@ pOS_thread::pOS_thread()
 	id = -1;
 	stack = 0;
 	attached_task = 0;
-	stack_size = 0;
 	used_stack = 0;
 	stack_total_checksum = 0;
 	stack_used_checksum = 0;

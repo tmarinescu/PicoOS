@@ -12,7 +12,6 @@ public:
 	volatile uint32_t* stack;
 	volatile uint32_t* attached_task;
 	
-	uint32_t stack_size;
 	uint32_t used_stack;
 	
 	uint32_t* stack_start;

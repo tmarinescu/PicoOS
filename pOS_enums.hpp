@@ -49,7 +49,6 @@ enum class pOS_stack_size
 	byte_512 = 512,
 	byte_1024 = 1024,
 	byte_2048 = 2048,
-	byte_4096 = 4096
 };
 
 enum class pOS_mpu_size

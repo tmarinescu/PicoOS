@@ -98,15 +98,15 @@ void pOS_scheduler::update()
 	{
 		for (uint32_t i = 0; i < STACK_GUARD_SIZE; i++)
 		{
-			if ((_active_thread->stack_start - _active_thread->stack_size + 1)[i] != STACK_GUARD)
+			if ((_active_thread->stack_start - (uint32_t)_active_thread->size + 1)[i] != STACK_GUARD)
 			{
 				_active_thread = 0;
 			}
 		}
 			
-		_active_thread->stack_total_checksum = calculate_checksum(_active_thread->stack_start, 0, _active_thread->stack_size);
+		_active_thread->stack_total_checksum = calculate_checksum(_active_thread->stack_start, 0, (uint32_t)_active_thread->size);
 		_active_thread->used_stack =  (uint32_t)_active_thread->stack_start - (uint32_t)*pOS_stack_ptr;
-		pOS_kernel_debug_values[2] = _active_thread->stack_size;
+		pOS_kernel_debug_values[2] = (uint32_t)_active_thread->size;
 		pOS_kernel_debug_values[3] = _active_thread->used_stack;
 		if (_active_thread->attached_task != 0)
 		{
@@ -118,7 +118,7 @@ void pOS_scheduler::update()
 		}
 			
 		_active_thread->stack_used_checksum = calculate_checksum(_active_thread->stack_start, 0, _active_thread->used_stack);
-		_active_thread->stack_free_checksum = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, (_active_thread->stack_size - _active_thread->used_stack));
+		_active_thread->stack_free_checksum = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, ((uint32_t)_active_thread->size - _active_thread->used_stack));
 		if ((uint32_t)*pOS_stack_ptr > ((uint32_t)_active_thread->stack_start))
 		{
 			_active_thread = 0;
@@ -140,9 +140,9 @@ void pOS_scheduler::update()
 	
 	if (_active_thread->stack_total_checksum != 0)
 	{
-		uint32_t total_stack = calculate_checksum(_active_thread->stack_start, 0, _active_thread->stack_size);
+		uint32_t total_stack = calculate_checksum(_active_thread->stack_start, 0, (uint32_t)_active_thread->size);
 		uint32_t used_stack = calculate_checksum(_active_thread->stack_start, 0, _active_thread->used_stack);
-		uint32_t free_stack = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, (_active_thread->stack_size - _active_thread->used_stack));
+		uint32_t free_stack = calculate_checksum(_active_thread->stack_start, _active_thread->used_stack, ((uint32_t)_active_thread->size - _active_thread->used_stack));
 		if ((_active_thread->stack_total_checksum != total_stack) || (_active_thread->stack_used_checksum != used_stack) || (_active_thread->stack_free_checksum != free_stack))
 		{
 			while (1)
@@ -229,7 +229,7 @@ void pOS_scheduler::update()
 	pOS_stack_ptr = &_threads[_current_thread].stack;
 	
 	pOS_stack_lower_limit = (uint32_t)_threads[_current_thread].stack_start;
-	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - _threads[_current_thread].stack_size);
+	pOS_stack_upper_limit = (uint32_t)(_threads[_current_thread].stack_start - (uint32_t)_threads[_current_thread].size);
 	
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
 		if (i != _current_thread)
@@ -245,6 +245,7 @@ bool pOS_scheduler::initialize()
 	_running = false;
 	_stack_offset = 0;
 	
+	/* This can be done in the linker script so the array starts off aligned but it's too messy and annoying to deal with */
 	pOS_utilities::debug_print((uint8_t*)"Aligning stack...\n");
 	for (uint32_t i = 0; i < TOTAL_MAXIMUM_STACK; i++)
 	{
@@ -290,7 +291,6 @@ bool pOS_scheduler::initialize()
 		_threads[i].stack_total_checksum = 0;
 		_threads[i].stack_used_checksum = 0;
 		_threads[i].stack_free_checksum = 0;
-		_threads[i].stack_size = 0;
 		_threads[i].used_stack = 0;
 		_threads[i].stack_start = 0;
 		_thread_addresses[i] = 0;
@@ -329,16 +329,16 @@ void pOS_scheduler::jump_start()
 	
 		for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
 		{
-			pOS_memory_protection::init_region(i, _threads[i].stack_top, pOS_mpu_size::byte_1024);
+			pOS_memory_protection::init_region(i, _threads[i].stack_top, pOS_utilities::convert_stack_to_mpu_size(_threads[i].size));
 		
 			if (_active_thread == &_threads[i])
 			{
-				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> unlocked\n", i);
+				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> 2^(%d+1) = %d -> unlocked\n", i, pOS_utilities::convert_stack_to_mpu_size(_threads[i].size), _threads[i].size);
 				pOS_memory_protection::unlock_region(i);
 			}
 			else
 			{
-				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> locked\n", i);
+				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> 2^(%d+1) = %d -> locked\n", i, pOS_utilities::convert_stack_to_mpu_size(_threads[i].size), _threads[i].size);
 				pOS_memory_protection::lock_region(i);
 			}
 		}
@@ -484,7 +484,7 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 		_stack[i] = 0;
 	}
 	
-	_thread->stack_size = (uint32_t)size;
+	_thread->size = size;
 	_thread->stack_total_checksum = 0;
 	_thread->stack_used_checksum = 0;
 	_thread->stack_free_checksum = 0;
@@ -516,9 +516,7 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 	_thread_init_offset++;
 	
 	pOS_utilities::debug_print((uint8_t*)"==Thread %d initialized==\n", thread_id);
-	pOS_utilities::debug_print((uint8_t*)"	-> stack start @ %08x -> stack end @ %08x\n", (uint32_t)_thread->stack_start, (uint32_t)_thread->stack_top);
-	pOS_utilities::debug_print((uint8_t*)"		-> stack size %d\n", size);
-	pOS_utilities::debug_print((uint8_t*)"			-> lower limit @ %08x -> upper limit @ %08x\n", (uint32_t)_thread->stack_start, (uint32_t)&_stack[_stack_offset]);
+	pOS_utilities::debug_print((uint8_t*)"-> stack start @ [%08x] -> stack end @ [%08x] -> stack size %d\n", (uint32_t)_thread->stack_start, (uint32_t)_thread->stack_top, _thread->size);
 	return true;
 }
 

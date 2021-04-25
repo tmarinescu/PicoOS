@@ -215,8 +215,8 @@ int main()
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
 	
-	if (ENABLE_DEBUG_PRINT)
-		pOS_utilities::debug_print((uint8_t*)"Debug printing enabled\n\n");
+	/* Print debug info if debug printing is enabled */
+	pOS_utilities::debug_print((uint8_t*)"Debug printing enabled\n\n");
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -289,7 +289,7 @@ int main()
 	pOS_scheduler::enable_task(id);
 #endif
 	
-	/* Start the kernel */
+	/* Boot up the MPU and start the kernel */
 	pOS_scheduler::jump_start();
 	while (1) ;
 	return 0;
