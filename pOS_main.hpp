@@ -29,10 +29,13 @@
 #define MEM_ID_LED_RUNNING	0xCCCCCCCC
 
 /* Used for our custom dev board */
+#define USE_CUSTOM_PROJECT_DEMO
+
+#ifdef USE_CUSTOM_PROJECT_DEMO
 #define BOARD_PICO_ZERO
 //#define BOARD_PICO_ONE
-#define USE_CUSTOM_PROJECT_DEMO
+#endif
 
 #define HANDSHAKE_TIMEOUT 2500
 
-#endif
+#endif

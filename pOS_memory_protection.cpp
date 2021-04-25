@@ -65,6 +65,11 @@ bool pOS_memory_protection::is_mpu_available()
 	return !_broken;
 }
 
+bool pOS_memory_protection::is_mpu_enabled()
+{
+	return _enabled || pOS_utilities::extract_bits(MPU_CTRL_Register, 0, 0);
+}
+
 void pOS_memory_protection::init_region(uint8_t region, void* start, pOS_mpu_size size)
 {
 	if (_broken)

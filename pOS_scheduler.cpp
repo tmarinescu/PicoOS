@@ -328,17 +328,16 @@ void pOS_scheduler::jump_start()
 	
 		for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
 		{
-			pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access\n", i);
 			pOS_memory_protection::init_region(i, _threads[i].stack_top, pOS_mpu_size::byte_1024);
 		
 			if (_active_thread == &_threads[i])
 			{
-				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d unlocked\n", i);
+				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access -> unlocked\n", i);
 				pOS_memory_protection::unlock_region(i);
 			}
 			else
 			{
-				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d locked\n", i);
+				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access -> locked\n", i);
 				pOS_memory_protection::lock_region(i);
 			}
 		}

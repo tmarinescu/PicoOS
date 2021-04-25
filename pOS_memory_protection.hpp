@@ -19,6 +19,7 @@ public:
 	static void set_mpu_unavailable();
 	static void set_mpu_available();
 	static bool is_mpu_available();
+	static bool is_mpu_enabled();
 	
 	static void init_region(uint8_t region, void* start, pOS_mpu_size size);
 	static void lock_region(uint8_t region);

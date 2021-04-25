@@ -137,6 +137,7 @@ void global_memory_init_task_return(int32_t ret)
 
 int32_t uart_input_task()
 {
+#ifdef USE_CUSTOM_PROJECT_DEMO
 	uint32_t* mcu_ptr = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
 	
 	if (*mcu_ptr == 0)
@@ -144,6 +145,7 @@ int32_t uart_input_task()
 		/* MCU handshake didn't succeed/timeout */
 		return 0;
 	}
+#endif
 	
 	uint8_t* uart_ptr = (uint8_t*)pOS_memory::wait_for_memory_id(MEM_ID_UART_INPUT);
 	
