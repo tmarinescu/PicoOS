@@ -7,7 +7,6 @@
 
 #include "hardware/uart.h"
 #include <string.h>
-#include <stdarg.h>
 #include <stdio.h>
 
 uint32_t pOS_communication_terminal::_index = 0;
@@ -111,6 +110,75 @@ void pOS_communication_terminal::print_string(uint8_t* str, ...)
 	}
 	
 	va_end(ap);
+}
+
+void pOS_communication_terminal::print_string(uint8_t* str, va_list args)
+{
+	if (_assigned_uart == 0)
+		return;
+	
+	int32_t ival;
+	double dval;
+	uint8_t* sval;
+	uint8_t cval;
+	
+	uint8_t* p;
+	for (p = str; *p; p++)
+	{
+		if (*p != '%')
+		{
+			core_print_chr_offset((uart_inst_t*)_assigned_uart, *p);
+			continue;
+		}
+		
+		switch (* ++p)
+		{
+		case 'd':
+			{
+				ival = va_arg(args, int);
+				print_int(ival);
+				break;
+			}
+		case 'f':
+			{
+				dval = va_arg(args, double);
+				print_double(dval);
+				break;
+			
+			}
+		case 's':
+			{
+				for (sval = va_arg(args, uint8_t*); *sval; sval++)
+					print_char(*sval);
+				break;
+			}
+		case 'c':
+			{
+				cval = (uint8_t)va_arg(args, int);
+				print_char(cval);
+				break;
+			}
+		case '0':
+			{
+				uint8_t count = *(++p) - '0';
+				uint8_t type = *(++p);
+				ival = va_arg(args, int);
+				if (type == 'x')
+				{
+					if (count == 2)
+						print_hex_2(ival);
+					else if (count == 4)
+						print_hex_4(ival);
+					else
+						print_hex_8(ival);
+				}
+				break;
+			}
+		default:
+			putchar(*p);
+			break;
+		}
+	}
 }
 
 void pOS_communication_terminal::print_char(uint8_t chr)

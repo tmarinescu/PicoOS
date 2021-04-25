@@ -3,6 +3,9 @@
 
 #include "pico/stdlib.h"
 
+/* Debug */
+#define ENABLE_DEBUG_PRINT true
+
 /* Registers */
 #define AIRCR_Register (*((volatile uint32_t*)(0xE0000000 + 0xED0C)))
 #define MPU_TYPE_Register (*((volatile uint32_t*)(0xE0000000 + 0xED90)))
@@ -13,7 +16,9 @@
 
 /* Scheduler stuff */
 #define MAX_STACK_PER_THREAD 1024
-#define NUM_OF_THREADS 8
+#define NUM_OF_THREADS 8		/* 8 is maximum although more can be implemented by the user but the performance will start to tank */
+								/* Minimum depends on how many tasks there are that can lock up at the same time (for demo it is 2 so you need 3 threads) */
+
 #define TOTAL_MAXIMUM_STACK (NUM_OF_THREADS + 1) * MAX_STACK_PER_THREAD /* Extra thread stack is being used for other things */
 #define NUM_OF_TASKS 64
 

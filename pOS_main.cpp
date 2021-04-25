@@ -215,6 +215,9 @@ int main()
 	pOS_communication_terminal::clear_terminal();
 	pOS_communication_terminal::reset_buffer();
 	
+	if (ENABLE_DEBUG_PRINT)
+		pOS_utilities::debug_print((uint8_t*)"Debug printing enabled\n\n");
+	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
 
@@ -230,9 +233,7 @@ int main()
 
 	/* Initialize thread stacks */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)
-	{
 		pOS_scheduler::initialize_thread(i, pOS_stack_size::byte_1024);
-	}
 
 	/* Enable all threads */
 	for (uint32_t i = 0; i < NUM_OF_THREADS; i++)

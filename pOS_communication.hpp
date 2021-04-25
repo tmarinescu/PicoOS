@@ -2,6 +2,7 @@
 #define _POS_COMMUNICATION_H_
 
 #include "pOS_main.hpp"
+#include <stdarg.h>
 
 #define TERMINAL_BUFFER_SIZE 256
 #define UART_BUFFER_SIZE 256
@@ -17,6 +18,7 @@ public:
 	static void initialize(uart_inst_t * uart, uint32_t tx_pin, uint32_t rx_pin);
 	static void clear_terminal();
 	static void print_string(uint8_t* str, ...);
+	static void print_string(uint8_t* str, va_list args);
 	static void print_char(uint8_t chr);
 	static void print_double(double num);
 	static void print_int(int32_t num);

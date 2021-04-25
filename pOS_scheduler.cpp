@@ -4,6 +4,7 @@
 #include "pOS_critical_section.hpp"
 #include "pOS_communication.hpp"
 #include "pOS_memory_protection.hpp"
+#include "pOS_utilities.hpp"
 
 extern "C"
 {
@@ -244,13 +245,13 @@ bool pOS_scheduler::initialize()
 	_running = false;
 	_stack_offset = 0;
 	
-	pOS_communication_terminal::print_string((uint8_t*)"Aligning stack...\n");
+	pOS_utilities::debug_print((uint8_t*)"Aligning stack...\n");
 	for (uint32_t i = 0; i < TOTAL_MAXIMUM_STACK; i++)
 	{
 		if (((((uint32_t)&_stack[i]) & 0x000000FF) == 0)) /* Search for nearest address with 0 as the lower 8 bits (MPU base address ignores last byte) eg. (0x123456XX, 0x777788XX) */
 		{
 			_stack_offset = i;
-			pOS_communication_terminal::print_string((uint8_t*)"Stack aligned from [0x%08x] to [0x%08x]\n", (uint32_t)&_stack[0], (uint32_t)&_stack[i]);
+			pOS_utilities::debug_print((uint8_t*)"Stack aligned from [0x%08x] to [0x%08x]\n\n", (uint32_t)&_stack[0], (uint32_t)&_stack[i]);
 			pOS_memory_protection::set_mpu_available();
 			break;
 		}
@@ -258,7 +259,7 @@ bool pOS_scheduler::initialize()
 		if (i == TOTAL_MAXIMUM_STACK - 1)
 		{
 			/* Could not find alignment, disable MPU */
-			pOS_communication_terminal::print_string((uint8_t*)"Could not align stack therefore MPU has been disabled.\n");
+			pOS_utilities::debug_print((uint8_t*)"Could not align stack therefore MPU has been disabled.\n\n");
 			pOS_memory_protection::set_mpu_unavailable();
 		}
 	}
@@ -321,7 +322,7 @@ void pOS_scheduler::jump_start()
 {
 	if (pOS_memory_protection::is_mpu_available())
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"MPU is available. Initializing...\n");
+		pOS_utilities::debug_print((uint8_t*)"\nMPU is available. Initializing...\n");
 		
 		/* Enable MPU */
 		pOS_memory_protection::enable_mpu();
@@ -332,20 +333,22 @@ void pOS_scheduler::jump_start()
 		
 			if (_active_thread == &_threads[i])
 			{
-				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access -> unlocked\n", i);
+				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> unlocked\n", i);
 				pOS_memory_protection::unlock_region(i);
 			}
 			else
 			{
-				pOS_communication_terminal::print_string((uint8_t*)"MPU -> Region %d set to no access -> locked\n", i);
+				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> locked\n", i);
 				pOS_memory_protection::lock_region(i);
 			}
 		}
 	}
 	else
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"WARNING: MPU is unavailable. Kernel security is at risk.\n");
+		pOS_utilities::debug_print((uint8_t*)"WARNING: MPU is unavailable. Kernel security is at risk.\n");
 	}
+	
+	pOS_utilities::debug_print((uint8_t*)"\n");
 		
 	/* Start kernel */
 	pOS_kernel_start();
@@ -512,6 +515,10 @@ bool pOS_scheduler::initialize_thread(int32_t thread_id, pOS_stack_size size)
 	_thread->initialized = true;
 	_thread_init_offset++;
 	
+	pOS_utilities::debug_print((uint8_t*)"==Thread %d initialized==\n", thread_id);
+	pOS_utilities::debug_print((uint8_t*)"	-> stack start @ %08x -> stack end @ %08x\n", (uint32_t)_thread->stack_start, (uint32_t)_thread->stack_top);
+	pOS_utilities::debug_print((uint8_t*)"		-> stack size %d\n", size);
+	pOS_utilities::debug_print((uint8_t*)"			-> lower limit @ %08x -> upper limit @ %08x\n", (uint32_t)_thread->stack_start, (uint32_t)&_stack[_stack_offset]);
 	return true;
 }
 
