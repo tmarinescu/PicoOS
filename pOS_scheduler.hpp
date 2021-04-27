@@ -37,10 +37,11 @@ public:
 	static void update();
 	static bool initialize();
 	static void jump_start();
-	static void corrupt_stack();
+	static bool corrupt_stack();
 	
 	static uint32_t get_tick();
 	static void set_tick(uint32_t tick);
+	static uint32_t get_time_tick();
 	static uint32_t calculate_checksum(volatile uint32_t* stack_loc, uint32_t offset, uint32_t size);
 	static int32_t find_thread_critical(uint32_t needed_stack);
 	

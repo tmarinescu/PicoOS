@@ -354,9 +354,20 @@ void pOS_scheduler::jump_start()
 	pOS_kernel_start();
 }
 
-void pOS_scheduler::corrupt_stack()
+/* Used for testing */
+bool pOS_scheduler::corrupt_stack()
 {
-	_stack[11 + 16 + 1] = 0;
+	/* Find a thread that is available and isn't current one */
+	for (uint32_t thrd = 0; thrd < NUM_OF_THREADS; thrd++)
+	{
+		if (_current_thread != thrd && _threads[thrd].enabled)
+		{
+			_threads[thrd].stack_top[17] = 0;
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 	
@@ -368,6 +379,11 @@ uint32_t pOS_scheduler::get_tick()
 void pOS_scheduler::set_tick(uint32_t tick)
 {
 	pOS_tick = tick;
+}
+
+uint32_t pOS_scheduler::get_time_tick()
+{
+	return timer_hw->timerawl / 1000;
 }
 
 uint32_t pOS_scheduler::calculate_checksum(volatile uint32_t* stack_loc, uint32_t offset, uint32_t size)

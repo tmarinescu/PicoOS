@@ -26,7 +26,8 @@ public:
 	static void print_hex_4(uint32_t num);
 	static void print_hex_8(uint32_t num);
 	static void reset_buffer();
-	static void append_buffer(uint8_t chr);
+	static bool append_buffer(uint8_t chr);
+	static bool truncate_buffer();
 	static uint8_t* get_buffer();
 	static uint8_t wait_for_input();
 	static void interpret_command();

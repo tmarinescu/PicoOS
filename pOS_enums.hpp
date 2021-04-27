@@ -61,6 +61,7 @@ enum class pOS_mpu_size
 
 enum class pOS_task_quanta
 {
+	extreme = 100,
 	heavy = 50,
 	normal = 10,
 	small = 1,

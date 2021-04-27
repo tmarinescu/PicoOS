@@ -9,8 +9,6 @@
 #include "pOS_utilities.hpp"
 #include "pOS_memory_protection.hpp"
 
-#include <ctype.h>
-
 /* Global mutex for testing */
 pOS_mutex g_mutex;
 pOS_mutex g_uart_mutex;
@@ -163,7 +161,7 @@ int32_t uart_input_task()
 	}
 	else
 	{
-		if (isprint(chr)) /* Check if character is printable */
+		if (chr != 0) /* Check if character is printable */
 		{
 			pOS_communication_terminal::print_char(chr);
 		}
@@ -258,7 +256,7 @@ int main()
 	
 	pOS_scheduler::create_task(&led_pwm_fade_task, 
 		&led_pwm_fade_task_return, 
-		pOS_task_quanta::heavy, 
+		pOS_task_quanta::normal, 
 		pOS_task_priority::normal, 
 		&id, 
 		true);
@@ -266,7 +264,7 @@ int main()
 	
 	pOS_scheduler::create_task(&delayed_loop_task, 
 		&delayed_loop_task_return, 
-		pOS_task_quanta::small, 
+		pOS_task_quanta::small,
 		pOS_task_priority::normal, 
 		&id, 
 		true);
@@ -274,7 +272,7 @@ int main()
 	
 	pOS_scheduler::create_task(&uart_input_task, 
 		0, 
-		pOS_task_quanta::small, 
+		pOS_task_quanta::normal, 
 		pOS_task_priority::normal, 
 		&id, 
 		true);
@@ -283,7 +281,7 @@ int main()
 #ifdef USE_CUSTOM_PROJECT_DEMO
 	pOS_scheduler::create_task(&wait_for_other_board, 
 		0, 
-		pOS_task_quanta::heavy, 
+		pOS_task_quanta::extreme, 
 		pOS_task_priority::normal, 
 		&id);
 	pOS_scheduler::enable_task(id);

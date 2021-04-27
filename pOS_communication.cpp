@@ -4,6 +4,7 @@
 #include "pOS_memory.hpp"
 #include "pOS_critical_section.hpp"
 #include "pOS_multicore.hpp"
+#include "pOS_utilities.hpp"
 
 #include "hardware/uart.h"
 #include <string.h>
@@ -227,14 +228,23 @@ void pOS_communication_terminal::reset_buffer()
 	_index = 0;
 }
 	
-void pOS_communication_terminal::append_buffer(uint8_t chr)
+bool pOS_communication_terminal::append_buffer(uint8_t chr)
 {
 	if (_index >= TERMINAL_BUFFER_SIZE)
-		return;
+		return false;
 	_buffer[_index] = chr;
 	_index++;
+	return true;
 }
-	
+
+bool pOS_communication_terminal::truncate_buffer()
+{
+	if (_index <= 0)
+		return false;
+	_buffer[--_index] = 0;
+	return true;
+}
+
 uint8_t* pOS_communication_terminal::get_buffer()
 {
 	return _buffer;
@@ -248,9 +258,32 @@ uint8_t pOS_communication_terminal::wait_for_input()
 	}
 	
 	uint8_t chr = uart_getc((uart_inst_t*)_assigned_uart);
-	if(chr != '\r')
-		append_buffer(chr);
-	return chr;
+	if (chr == '\r')
+	{
+		return chr;
+	}
+	else if (chr == '\b' || chr == 127)
+	{
+		if (truncate_buffer())
+		{
+			return chr;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (append_buffer(chr))
+		{
+			return chr;
+		}
+		else
+		{
+			return 0;
+		}
+	}
 }
 
 void pOS_communication_terminal::interpret_command()
@@ -278,8 +311,15 @@ void pOS_communication_terminal::interpret_command()
 	else if (strcmp((char*)_buffer, "corrupt stack") == 0)
 	{
 		pOS_communication_terminal::print_string((uint8_t*)"\nCorrupting...\n");
-		pOS_scheduler::corrupt_stack();
-		pOS_communication_terminal::print_string((uint8_t*)"\nCorrupted\n");
+		
+		if (pOS_scheduler::corrupt_stack())
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"\nCorrupted\n");
+		}
+		else
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"\nCould not corrupt\n");
+		}
 	}
 	else
 	{
@@ -317,42 +357,44 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	pOS_gpio::get(rx_pin)->set_type(pOS_gpio_type::output)->disable();
 #endif
 
-	uint32_t _tick = pOS_scheduler::get_tick();
+	uint32_t _tick = pOS_scheduler::get_time_tick();
 	uint32_t _period_tick = _tick;
 	
 #ifdef BOARD_PICO_ZERO
+	pOS_utilities::debug_print((uint8_t*)"\n[Phase 1]...");
 	while (!pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
-		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		if (pOS_scheduler::get_time_tick() - _tick >= HANDSHAKE_TIMEOUT)
 		{
 			return false; /* Time out */
 		}
 		
-		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		if (pOS_scheduler::get_time_tick() - _period_tick >= 100)
 		{
 			pOS_communication_terminal::print_char('.');
-			_period_tick = pOS_scheduler::get_tick();
+			_period_tick = pOS_scheduler::get_time_tick();
 		}
 	}
 	
 	pOS_gpio::get(rx_pin)->disable();
 	
-	_tick = pOS_scheduler::get_tick();
+	_tick = pOS_scheduler::get_time_tick();
 	_period_tick = _tick;
 	
+	pOS_utilities::debug_print((uint8_t*)"\n[Phase 2]...");
 	while (pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
-		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		if (pOS_scheduler::get_time_tick() - _tick >= HANDSHAKE_TIMEOUT)
 		{
 			return false; /* Time out */
 		}
 		
-		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		if (pOS_scheduler::get_time_tick() - _period_tick >= 100)
 		{
 			pOS_communication_terminal::print_char('.');
-			_period_tick = pOS_scheduler::get_tick();
+			_period_tick = pOS_scheduler::get_time_tick();
 		}
 	}
 #endif
@@ -361,35 +403,35 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	while (!pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
-		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		if (pOS_scheduler::get_time_tick() - _tick >= HANDSHAKE_TIMEOUT)
 		{
 			return false; /* Time out */
 		}
 		
-		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		if (pOS_scheduler::get_time_tick() - _period_tick >= 100)
 		{
 			pOS_communication_terminal::print_char('.');
-			_period_tick = pOS_scheduler::get_tick();
+			_period_tick = pOS_scheduler::get_time_tick();
 		}
 	}
 	
 	pOS_gpio::get(rx_pin)->enable();
 	
-	_tick = pOS_scheduler::get_tick();
+	_tick = pOS_scheduler::get_time_tick();
 	_period_tick = _tick;
 	
 	while (pOS_gpio::get(tx_pin)->read())
 	{
 		/* Lock up until other MCU is responsive */
-		if (pOS_scheduler::get_tick() - _tick >= HANDSHAKE_TIMEOUT)
+		if (pOS_scheduler::get_time_tick() - _tick >= HANDSHAKE_TIMEOUT)
 		{
 			return false; /* Time out */
 		}
 		
-		if (pOS_scheduler::get_tick() - _period_tick >= 100)
+		if (pOS_scheduler::get_time_tick() - _period_tick >= 100)
 		{
 			pOS_communication_terminal::print_char('.');
-			_period_tick = pOS_scheduler::get_tick();
+			_period_tick = pOS_scheduler::get_time_tick();
 		}
 	}
 	
@@ -399,11 +441,14 @@ bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint3
 	/* Both MCUs did a GPIO handshake, now initialize uart on the same pins */
 	_assigned_uart = uart;
 	_handshake_confirmed = true;
+	pOS_utilities::debug_print((uint8_t*)"\nPhase 1 and 2 successful, starting UART handshake...");
 	uart_init((uart_inst_t *)_assigned_uart, 115200);
 	uart_set_fifo_enabled(uart, false);
 	
 	pOS_gpio::get(tx_pin)->set_function(pOS_gpio_function::uart);
 	pOS_gpio::get(rx_pin)->set_function(pOS_gpio_function::uart);
+	
+	pOS_utilities::debug_print((uint8_t*)"\nUART handshake successful!");
 	return true;
 }
 	
