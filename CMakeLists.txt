@@ -21,14 +21,16 @@ add_executable(hello_multicore
         pOS_communication.cpp
         pOS_multicore.cpp
         pOS_memory_protection.cpp
-        pOS_utilities.cpp)
+        pOS_utilities.cpp
+        pOS_display.cpp)
 
 # Add pico_multicore which is required for multicore functionality
 target_link_libraries(hello_multicore
         pico_stdlib
         pico_multicore
         hardware_adc
-        hardware_pwm)
+        hardware_pwm
+        hardware_spi)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(hello_multicore)

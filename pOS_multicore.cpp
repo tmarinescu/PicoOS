@@ -6,6 +6,7 @@ extern "C"
 }
 
 #include "pico/multicore.h"
+#include "pOS_display.hpp"
 
 typedef struct
 {
@@ -18,21 +19,34 @@ typedef struct
 queue_t call_queue;
 queue_t results_queue;
 
+#ifdef ENABLE_TFT_DISPLAY
+extern volatile uint32_t g_draw_frame;
+#endif
+
 void core1_entry()
 {
 	queue_entry_t entry;
 	while (true)
 	{
-		queue_remove_blocking(&call_queue, &entry);
+		if (queue_try_remove(&call_queue, &entry))
+		{
+			if (entry.call_type == 1)
+			{
+				uart_puts(entry.uart_type, (char *)entry.data_s);
+			}
+			else if (entry.call_type == 2)
+			{
+				uart_putc(entry.uart_type, entry.data_c);
+			}
+		}
 		
-		if (entry.call_type == 1)
+#ifdef ENABLE_TFT_DISPLAY
+		if (g_draw_frame == 1)
 		{
-			uart_puts(entry.uart_type, (char *)entry.data_s);
+			pOS_display::draw_frame();
+			g_draw_frame = 0;
 		}
-		else if (entry.call_type == 2)
-		{
-			uart_putc(entry.uart_type, entry.data_c);
-		}
+#endif
 	}
 }
 

@@ -8,10 +8,16 @@
 #include "pOS_multicore.hpp"
 #include "pOS_utilities.hpp"
 #include "pOS_memory_protection.hpp"
+#include "pOS_display.hpp"
+#include "pOS_semaphore.hpp"
 
 /* Global mutex for testing */
 pOS_mutex g_mutex;
 pOS_mutex g_uart_mutex;
+
+#ifdef ENABLE_TFT_DISPLAY
+volatile uint32_t g_draw_frame = 0;
+#endif
 
 /* Critical section for testing */
 pOS_critical::pOS_critical_section g_crit_sec;
@@ -175,32 +181,64 @@ int32_t wait_for_other_board()
 	uint32_t* mcu_status = (uint32_t*)pOS_memory::wait_for_memory_id(MEM_ID_MCU_STATUS);
 	
 	pOS_communication_terminal::print_string((uint8_t*)"Searching for MCU handshake...");
-	bool value = pOS_communication_mcu::initialize(uart0, 16, 17);
+	bool value = false;//pOS_communication_mcu::initialize(uart0, 16, 17);
 	if (!value)
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake timed out!\n");
+		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake timed out!\n\n");
 		*mcu_status = 2;
 	}
 	else
 	{
-		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake successful!\n");
+		pOS_communication_terminal::print_string((uint8_t*)"\nMCU handshake successful!\n\n");
 		*mcu_status = 1;
 	}
 	return 0;
 }
 #endif
 
+#ifdef ENABLE_TFT_DISPLAY
+int32_t drawing_task()
+{
+	static uint32_t x = 0;
+	static uint32_t bounce = 1;
+	
+	if (bounce == 1)
+	{
+		x+=2;
+		if (x >= 240 - 64)
+			bounce = 0;
+	}
+	else
+	{
+		x-=2;
+		if (x <= 0)
+			bounce = 1;
+	}
+	
+	while (g_draw_frame != 0) ;
+	pOS_display::fill_background(0x00F8);
+	pOS_display::fill_rect(x, x, 64, 64, 0xF800);
+	g_draw_frame = 1;
+	return 0;
+}
+#endif
+
 int main() 
 {
-	/* Disable all interrupts*/
-	pOS_critical::disable_all_interrupts();
+#ifdef ENABLE_TFT_DISPLAY
+	/* Initialize display, leave here since it uses sleep for now */
+	pOS_display::initialize(spi0, 16, 18, 19, 13, 11, 12);
+#endif
 	
 	/* Init core 1 */
 	core1_init();
 	
+	/* Disable all interrupts*/
+	pOS_critical::disable_all_interrupts();
+
 	/* Initialize MPU */
 	pOS_memory_protection::initialize();
-	
+
 	/* Initialize memory manager */
 	pOS_memory::initialize();
 	
@@ -218,7 +256,8 @@ int main()
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
-
+	pOS_memory_protection::set_mpu_unavailable();
+	
 	/* Link all the threads to the functions and IDs */
 	pOS_scheduler::link_thread(0, &thread_1);
 	pOS_scheduler::link_thread(1, &thread_2);
@@ -256,7 +295,7 @@ int main()
 	
 	pOS_scheduler::create_task(&led_pwm_fade_task, 
 		&led_pwm_fade_task_return, 
-		pOS_task_quanta::normal, 
+		pOS_task_quanta::small, 
 		pOS_task_priority::normal, 
 		&id, 
 		true);
@@ -272,7 +311,7 @@ int main()
 	
 	pOS_scheduler::create_task(&uart_input_task, 
 		0, 
-		pOS_task_quanta::normal, 
+		pOS_task_quanta::small, 
 		pOS_task_priority::normal, 
 		&id, 
 		true);
@@ -281,12 +320,24 @@ int main()
 #ifdef USE_CUSTOM_PROJECT_DEMO
 	pOS_scheduler::create_task(&wait_for_other_board, 
 		0, 
-		pOS_task_quanta::extreme, 
+		pOS_task_quanta::normal, 
 		pOS_task_priority::normal, 
 		&id);
 	pOS_scheduler::enable_task(id);
 #endif
 	
+#ifdef ENABLE_TFT_DISPLAY
+
+	pOS_scheduler::create_task(&drawing_task,
+		0,
+		pOS_task_quanta::normal,
+		pOS_task_priority::normal,
+		&id,
+		true);
+	pOS_scheduler::enable_task(id);
+	
+#endif
+
 	/* Boot up the MPU and start the kernel */
 	pOS_scheduler::jump_start();
 	while (1) ;

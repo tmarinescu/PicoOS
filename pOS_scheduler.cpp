@@ -326,11 +326,11 @@ void pOS_scheduler::jump_start()
 		
 		/* Enable MPU */
 		pOS_memory_protection::enable_mpu();
-	
+
 		for (uint8_t i = 0; i < NUM_OF_THREADS; i++)
 		{
 			pOS_memory_protection::init_region(i, _threads[i].stack_top, pOS_utilities::convert_stack_to_mpu_size(_threads[i].size));
-		
+			
 			if (_active_thread == &_threads[i])
 			{
 				pOS_utilities::debug_print((uint8_t*)"MPU -> Region %d set to no access -> 2^(%d+1) = %d -> unlocked\n", i, pOS_utilities::convert_stack_to_mpu_size(_threads[i].size), _threads[i].size);
@@ -345,7 +345,7 @@ void pOS_scheduler::jump_start()
 	}
 	else
 	{
-		pOS_utilities::debug_print((uint8_t*)"WARNING: MPU is unavailable. Kernel security is at risk.\n");
+		pOS_utilities::debug_print((uint8_t*)"\nWARNING: MPU is unavailable. Kernel security is at risk.\n");
 	}
 	
 	pOS_utilities::debug_print((uint8_t*)"\n");

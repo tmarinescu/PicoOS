@@ -13,6 +13,8 @@ public:
 	volatile bool locked;
 	void lock() volatile;
 	void unlock() volatile;
+	void risky_lock() volatile;
+	void risky_unlock() volatile;
 };
 
 class pOS_auto_mutex

@@ -38,6 +38,25 @@ void pOS_mutex::unlock() volatile
 	pOS_critical::enable_and_restore_interrupts(mem);
 }
 
+void pOS_mutex::risky_lock() volatile
+{
+	while (true)
+	{
+		if (_semaphore == 0)
+		{
+			_semaphore = 1;
+			locked = true;
+			return;
+		}
+	}
+}
+	
+void pOS_mutex::risky_unlock() volatile
+{
+	_semaphore = 0;
+	locked = false;
+}
+
 pOS_auto_mutex::pOS_auto_mutex(pOS_mutex* mutex)
 {
 	main_mutex = mutex;
