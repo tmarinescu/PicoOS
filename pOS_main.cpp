@@ -113,6 +113,7 @@ int32_t global_memory_init_task()
 	void* ptr2 = pOS_memory::allocate(MEM_ID_LED_STATE, 1);
 	void* ptr4 = pOS_memory::allocate(MEM_ID_UART_INPUT, 1);
 	void* ptr5 = pOS_memory::allocate(MEM_ID_LED_RUNNING, 1);
+	void* ptr6 = pOS_memory::allocate(MEM_ID_BLUETOOTH_INIT, 1);
 	
 	/* Zero out memory as a test */
 	pOS_memory::zero(MEM_ID_LED_FADE); /* By direct ID */
@@ -120,6 +121,7 @@ int32_t global_memory_init_task()
 	pOS_memory::zero(ptr3);
 	pOS_memory::zero(ptr4);
 	pOS_memory::zero(ptr5);
+	pOS_memory::zero(MEM_ID_BLUETOOTH_INIT);
 	
 	/* Initialize default values */
 	*((uint32_t*)ptr1) = 0; /* By pointer */
@@ -200,12 +202,15 @@ int32_t wait_for_other_board()
 int32_t drawing_task()
 {
 	static uint32_t x = 0;
+	static uint32_t x2 = 0;
 	static uint32_t bounce = 1;
+	static uint32_t bounce2 = 1;
+	static uint32_t width = 8;
 	
 	if (bounce == 1)
 	{
 		x+=2;
-		if (x >= 240 - 64)
+		if (x >= 240 - (width * 3))
 			bounce = 0;
 	}
 	else
@@ -215,13 +220,50 @@ int32_t drawing_task()
 			bounce = 1;
 	}
 	
+	if (bounce2 == 1)
+	{
+		x2 += 4;
+		if (x2 >= 240 - (width * 3))
+			bounce2 = 0;
+	}
+	else
+	{
+		x2 -= 4;
+		if (x2 <= 0)
+			bounce2 = 1;
+	}
+	
 	while (g_draw_frame != 0) ;
-	pOS_display::fill_background(0x00F8);
-	pOS_display::fill_rect(x, x, 64, 64, 0xF800);
+	pOS_display::fill_background(0xFFFF);
+	
+	for (uint32_t i = 0; i < 20; i++)
+	{
+		pOS_display::fill_rect(x, 0 + (width * i * 2), width, width, 0x00F8);
+		pOS_display::fill_rect(x + width, 0 + (width * i * 2), width, width, 0xE007);
+		pOS_display::fill_rect(x + (width * 2), 0 + (width * i * 2), width, width, 0x1F00) ;
+		pOS_display::fill_rect(240 - (width * 3) - x, 0 + (width * i * 2), width, width, 0x00F8);
+		pOS_display::fill_rect(240 - (width * 3) - x + width, 0 + (width * i * 2), width, width, 0xE007);
+		pOS_display::fill_rect(240 - (width * 3) - x + (width * 2), 0 + (width * i * 2), width, width, 0x1F00);
+	
+		pOS_display::fill_rect(x2, width + (width * i * 2), width, width, 0x00F8);
+		pOS_display::fill_rect(x2 + width, width + (width * i * 2), width, width, 0xE007);
+		pOS_display::fill_rect(x2 + (width * 2), width + (width * i * 2), width, width, 0x1F00) ;
+		pOS_display::fill_rect(240 - (width * 3) - x2, width + (width * i * 2), width, width, 0x00F8);
+		pOS_display::fill_rect(240 - (width * 3) - x2 + width, width + (width * i * 2), width, width, 0xE007);
+		pOS_display::fill_rect(240 - (width * 3) - x2 + (width * 2), width + (width * i * 2), width, width, 0x1F00);
+	}
+	
+	pOS_display::draw_text();
 	g_draw_frame = 1;
 	return 0;
 }
 #endif
+
+int32_t bluetooth_task()
+{
+	pOS_bluetooth::receive_data();
+	return 0;
+}
 
 int main() 
 {
@@ -253,6 +295,11 @@ int main()
 	
 	/* Print debug info if debug printing is enabled */
 	pOS_utilities::debug_print((uint8_t*)"Debug printing enabled\n\n");
+	
+	/* Bluetooth */
+	pOS_utilities::debug_print((uint8_t*)"Initializing bluetooth...\n");
+	pOS_bluetooth::initialize(uart0, 16, 17);
+	pOS_utilities::debug_print((uint8_t*)"Initialized\n");
 	
 	/* Initialize scheduler */
 	pOS_scheduler::initialize();
@@ -337,6 +384,14 @@ int main()
 	pOS_scheduler::enable_task(id);
 	
 #endif
+	
+	pOS_scheduler::create_task(&bluetooth_task,
+		0,
+		pOS_task_quanta::normal,
+		pOS_task_priority::normal,
+		&id,
+		true);
+	pOS_scheduler::enable_task(id);
 
 	/* Boot up the MPU and start the kernel */
 	pOS_scheduler::jump_start();

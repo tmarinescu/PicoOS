@@ -2,6 +2,14 @@
 
 #ifdef ENABLE_TFT_DISPLAY
 
+uint8_t font_data[] = 
+{
+	0x08, 0x8c, 0x44, 0x44, 0x42, 0x7e, 0x42, 0x42, //h
+	0x7c, 0x06, 0x02, 0x02, 0x3e, 0x02, 0x06, 0xfc, //e
+	0x08, 0x0c, 0x04, 0x04, 0x02, 0x02, 0x02, 0x7e, //l
+	0x18, 0x76, 0x42, 0x81, 0x83, 0x82, 0x86, 0x7c, //o
+};
+
 uint16_t pOS_display::_buffer[WIDTH * HEIGHT];
 
 uint32_t pOS_display::spi_dc_pin;
@@ -50,7 +58,7 @@ void pOS_display::initialize(spi_inst_t* spi, uint32_t spi_rx, uint32_t spi_tx, 
 	push_parameter(0x27);
 	
 	push_command(0xF2);   //Disable 3 gamma
-	push_parameter(0x02);   //2 is disable you fucking retards, 3 is enable
+	push_parameter(0x02);
 	
 	push_command(0x26);
 	push_parameter(0x01);
@@ -117,12 +125,90 @@ void pOS_display::initialize(spi_inst_t* spi, uint32_t spi_rx, uint32_t spi_tx, 
 	
 	push_command(0x2C);
 }
+
+void pOS_display::draw_text()
+{
+	for (uint32_t i = 0; i < 8; i++)
+	{
+		for (uint32_t j = 0; j < 8; j++)
+		{
+			if (((font_data[i] >> j) & 1) == 1)
+			{
+				_buffer[WIDTH * i + j] = 0x0000;
+			}
+			else
+			{
+				_buffer[WIDTH * i + j] = 0xFFFF;
+			}
+		}
+	}
+	
+	for (uint32_t i = 8; i < 16; i++)
+	{
+		for (uint32_t j = 0; j < 8; j++)
+		{
+			if (((font_data[i] >> j) & 1) == 1)
+			{
+				_buffer[WIDTH * (i - 8) + j + 8] = 0x0000;
+			}
+			else
+			{
+				_buffer[WIDTH * (i - 8) + j + 8] = 0xFFFF;
+			}
+		}
+	}
+	
+	for (uint32_t i = 16; i < 24; i++)
+	{
+		for (uint32_t j = 0; j < 8; j++)
+		{
+			if (((font_data[i] >> j) & 1) == 1)
+			{
+				_buffer[WIDTH * (i - 16) + j + 16] = 0x0000;
+			}
+			else
+			{
+				_buffer[WIDTH * (i - 16) + j + 16] = 0xFFFF;
+			}
+		}
+	}
+	
+	for (uint32_t i = 16; i < 24; i++)
+	{
+		for (uint32_t j = 0; j < 8; j++)
+		{
+			if (((font_data[i] >> j) & 1) == 1)
+			{
+				_buffer[WIDTH * (i - 16) + j + 24] = 0x0000;
+			}
+			else
+			{
+				_buffer[WIDTH * (i - 16) + j + 24] = 0xFFFF;
+			}
+		}
+	}
+	
+	for (uint32_t i = 24; i < 32; i++)
+	{
+		for (uint32_t j = 0; j < 8; j++)
+		{
+			if (((font_data[i] >> j) & 1) == 1)
+			{
+				_buffer[WIDTH * (i - 24) + j + 32] = 0x0000;
+			}
+			else
+			{
+				_buffer[WIDTH * (i - 24) + j + 32] = 0xFFFF;
+			}
+		}
+	}
+}
 	
 void pOS_display::fill_rect(uint16_t x, uint16_t y, uint16_t width, uint32_t height, uint16_t color)
 {
 	for (uint32_t i = x; i < width + x; i++)
 		for (uint32_t j = y; j < height + y; j++)
-			_buffer[WIDTH * i + j] = color;
+			_buffer[WIDTH * j + i] = color;
 }
 	
 void pOS_display::fill_background(uint16_t color)

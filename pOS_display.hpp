@@ -25,6 +25,7 @@ public:
 	
 	static void fill_rect(uint16_t x, uint16_t y, uint16_t width, uint32_t height, uint16_t color);
 	static void fill_background(uint16_t color);
+	static void draw_text();
 	
 	static void push_command(uint8_t cmd);
 	static void push_parameter(uint8_t data);

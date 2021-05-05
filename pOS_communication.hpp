@@ -6,6 +6,7 @@
 
 #define TERMINAL_BUFFER_SIZE 256
 #define UART_BUFFER_SIZE 256
+#define BLUETOOTH_BUFFER_SIZE 256
 
 class pOS_communication_terminal
 {
@@ -47,6 +48,24 @@ public:
 	static void send_data(uint8_t* data, uint32_t size);
 	static uint8_t receive_data();
 	static void interpret_data();
+};
+
+class pOS_bluetooth
+{
+private:
+	static uint32_t _index;
+	static volatile uint32_t _response_check;
+	static uint8_t _buffer[BLUETOOTH_BUFFER_SIZE];
+	static volatile uart_inst_t* _assigned_uart;
+public:
+	static bool initialize(uart_inst_t* uart, uint32_t tx_pin, uint32_t rx_pin);
+	static void send_data(uint8_t* data, uint32_t size);
+	static void send_data_1b(uint8_t data);
+	static void receive_data();
+	static bool wait_for_response(uint8_t* data, uint32_t size, uint32_t timeout);
+	static bool wait_for_any_response(uint32_t timeout);
+	static void clear_response();
+	static void print_response();
 };
 
 #endif

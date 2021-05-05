@@ -288,9 +288,6 @@ uint8_t pOS_communication_terminal::wait_for_input()
 
 void pOS_communication_terminal::interpret_command()
 {
-	pOS_critical::pOS_critical_section sec;
-	
-	sec.enter();
 	if (strcmp((char *)_buffer, "reset") == 0)
 	{
 		pOS_communication_terminal::print_string((uint8_t*)"\nResetting...\n");
@@ -321,6 +318,99 @@ void pOS_communication_terminal::interpret_command()
 			pOS_communication_terminal::print_string((uint8_t*)"\nCould not corrupt\n");
 		}
 	}
+	else if (strcmp((char*)_buffer, "bluetooth wake") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_utilities::debug_print((uint8_t*)"\nWaking up...\n");
+		for (uint32_t i = 0; i < 1024; i++)
+			pOS_bluetooth::send_data_1b('f');
+		while (!pOS_bluetooth::wait_for_any_response(500))
+		{
+			for (uint32_t i = 0; i < 1024; i++)
+				pOS_bluetooth::send_data_1b('f');
+		}
+		pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+		pOS_bluetooth::print_response();
+		pOS_communication_terminal::print_string((uint8_t*)"\n");
+	}
+	else if (strcmp((char*)_buffer, "bluetooth sleep") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_bluetooth::send_data((uint8_t*)"AT+SLEEP\r\n", 10);
+		if (pOS_bluetooth::wait_for_any_response(5000))
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+			pOS_bluetooth::print_response();
+			pOS_communication_terminal::print_string((uint8_t*)"\n");
+		}
+		else
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response timed out!\n");
+		}
+	}
+	else if (strcmp((char*)_buffer, "bluetooth check") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_bluetooth::send_data((uint8_t*)"AT\r\n", 4);
+		if (pOS_bluetooth::wait_for_any_response(5000))
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+			pOS_bluetooth::print_response();
+			pOS_communication_terminal::print_string((uint8_t*)"\n");
+		}
+		else
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response timed out!\n");
+		}
+	}
+	else if (strcmp((char*)_buffer, "bluetooth get baud") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_bluetooth::send_data((uint8_t*)"AT+BAUD?\r\n", 10);
+		if (pOS_bluetooth::wait_for_any_response(5000))
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+			pOS_bluetooth::print_response();
+			pOS_communication_terminal::print_string((uint8_t*)"\n");
+		}
+		else
+		{
+			pOS_utilities::debug_print((uint8_t*)"Response timed out!\n");
+		}
+		
+	}
+	else if (strcmp((char*)_buffer, "bluetooth get addr") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_bluetooth::send_data((uint8_t*)"AT+ADDR?\r\n", 10);
+		if (pOS_bluetooth::wait_for_any_response(5000))
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+			pOS_bluetooth::print_response();
+			pOS_communication_terminal::print_string((uint8_t*)"\n");
+		}
+		else
+		{
+			pOS_utilities::debug_print((uint8_t*)"Response timed out!\n");
+		}
+		
+	}
+	else if (strcmp((char*)_buffer, "bluetooth help") == 0)
+	{
+		pOS_bluetooth::clear_response();
+		pOS_bluetooth::send_data((uint8_t*)"AT+HELP?\r\n", 10);
+		if (pOS_bluetooth::wait_for_any_response(5000))
+		{
+			pOS_communication_terminal::print_string((uint8_t*)"Response: ");
+			pOS_bluetooth::print_response();
+			pOS_communication_terminal::print_string((uint8_t*)"\n");
+		}
+		else
+		{
+			pOS_utilities::debug_print((uint8_t*)"Response timed out!\n");
+		}
+		
+	}
 	else
 	{
 		pOS_communication_terminal::print_string((uint8_t*)"\nCommand not valid [");
@@ -328,7 +418,6 @@ void pOS_communication_terminal::interpret_command()
 		pOS_communication_terminal::print_string((uint8_t*)"]\n");
 	}
 	reset_buffer();
-	sec.exit();
 }
 
 uint32_t pOS_communication_mcu::_index = 0;
@@ -339,10 +428,7 @@ bool pOS_communication_mcu::_handshake_confirmed = false;
 bool pOS_communication_mcu::initialize(uart_inst_t* uart, uint32_t tx_pin, uint32_t rx_pin)
 {
 	for (uint32_t i = 0; i < UART_BUFFER_SIZE; i++)
-	{
 		_buffer[i] = 0;
-		
-	}
 	_index = 0;
 	_handshake_confirmed = false;
 	_assigned_uart = 0;
@@ -469,13 +555,11 @@ uint8_t pOS_communication_mcu::receive_data()
 		return 0;
 	
 	uint8_t chr = uart_getc((uart_inst_t*)_assigned_uart);
-	
 	if (_index >= UART_BUFFER_SIZE)
-	{
 		_index = 0;
-		_buffer[_index] = chr;
-	}
-	
+			
+	_buffer[_index] = chr;
+	_index++;
 	return chr;
 }
 	
@@ -483,4 +567,146 @@ void pOS_communication_mcu::interpret_data()
 {
 	if (_assigned_uart == 0)
 		return;
+}
+
+
+uint32_t pOS_bluetooth::_index;
+uint8_t pOS_bluetooth::_buffer[BLUETOOTH_BUFFER_SIZE];
+volatile uart_inst_t* pOS_bluetooth::_assigned_uart;
+volatile uint32_t pOS_bluetooth::_response_check;
+
+bool pOS_bluetooth::initialize(uart_inst_t* uart, uint32_t tx_pin, uint32_t rx_pin)
+{
+	_response_check = 0;
+	for (uint32_t i = 0; i < BLUETOOTH_BUFFER_SIZE; i++)
+		_buffer[i] = 0;
+	_index = 0;
+	_assigned_uart = uart;
+	uart_init(uart, 9600);
+	uart_set_fifo_enabled(uart, true);
+
+	pOS_gpio::get(tx_pin)->set_function(pOS_gpio_function::uart);
+	pOS_gpio::get(rx_pin)->set_function(pOS_gpio_function::uart);
+	
+	/* Discard garbage on line */
+	//uart_getc((uart_inst_t*)_assigned_uart);
+	return true;
+}
+	
+void pOS_bluetooth::send_data(uint8_t* data, uint32_t size)
+{
+	if (_assigned_uart == 0)
+		return;
+	
+	pOS_communication_terminal::print_string((uint8_t*)"\nCommand: ");
+	for (uint32_t i = 0; i < size; i++)
+	{
+		if (data[i] != '\r' && data[i] != '\n')
+		{
+			pOS_communication_terminal::print_char(data[i]);
+		}
+	}
+	pOS_communication_terminal::print_string((uint8_t*)"\n");
+		
+	for (uint32_t i = 0; i < size; i++)
+	{
+		uart_putc((uart_inst_t*)_assigned_uart, data[i]);
+	}
+}
+
+void pOS_bluetooth::send_data_1b(uint8_t data)
+{
+	if (_assigned_uart == 0)
+		return;
+	uart_putc((uart_inst_t*)_assigned_uart, data);
+}
+	
+void pOS_bluetooth::receive_data()
+{
+	if (_assigned_uart == 0)
+		return;
+	
+	if (_response_check == 1)
+		return;
+	
+	while (uart_is_readable((uart_inst_t*)_assigned_uart))
+	{
+		uint8_t chr = uart_getc((uart_inst_t*)_assigned_uart);
+		if (chr == '\n' || chr == '\r')
+		{
+			_buffer[_index] = 0;
+			_response_check = 1;
+			return;
+		}
+		else
+		{
+			if (_index >= BLUETOOTH_BUFFER_SIZE)
+				_index = 0;
+			_buffer[_index] = chr;
+			_index++;
+		}
+	}
+}
+
+bool pOS_bluetooth::wait_for_response(uint8_t* data, uint32_t size, uint32_t timeout)
+{
+	uint32_t tick = pOS_scheduler::get_time_tick();
+	
+	while (pOS_scheduler::get_time_tick() - tick < timeout)
+	{
+		if (_response_check == 1)
+		{
+			for (uint32_t i = 0; i < size; i++)
+			{
+				if (data[i] != _buffer[i])
+				{
+					return false;
+				}
+			}
+				
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+bool pOS_bluetooth::wait_for_any_response(uint32_t timeout)
+{
+	uint32_t tick = pOS_scheduler::get_time_tick();
+	
+	while (pOS_scheduler::get_time_tick() - tick < timeout)
+	{
+		if (_response_check == 1)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+void pOS_bluetooth::clear_response()
+{
+	if (_assigned_uart == 0)
+		return;
+	
+	while (uart_is_readable((uart_inst_t*)_assigned_uart))
+		uart_getc((uart_inst_t*)_assigned_uart);
+	
+	_index = 0;
+	for (uint32_t i = 0; i < BLUETOOTH_BUFFER_SIZE; i++)
+		_buffer[i] = 0;
+	_response_check = 0;
+}
+
+void pOS_bluetooth::print_response()
+{
+	if (_response_check == 0)
+		return;
+	
+	for (uint32_t i = 0; i < _index; i++)
+	{
+		pOS_communication_terminal::print_char(_buffer[i]);
+	}
 }
